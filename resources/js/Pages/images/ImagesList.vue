@@ -20,7 +20,13 @@
               <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">
                 <img class="" src="'storage/imagesPost/'+ image.imagen" :alt="image.name">
               </a>
+              {{ image.imagen }}
               <h1 class="btn  border-red-900 border-4 bg-teal-900"><a :href="'storage/imagesPost/'+ image.imagen">Enlace </a></h1>
+              <br/>
+              <button @click="destroy(images.id)"
+        class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+      Eliminar 
+              </button>
             </div>
           </div>
         </div>
@@ -43,9 +49,17 @@ import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { Link } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/inertia-vue3'
 
 
 
+function destroy(id) {
+    if (confirm("Are you sure you want to Delete")) {
+      alert(99);
+        InertiaApp.delete(route("images.destroy", id));
+        alert(999999)
+    }
+}
 
 
 defineProps({ images: Array })

@@ -17,13 +17,13 @@ class ImagePostController extends Controller
 
      public function __construct()
      {
-         $this->middleware('auth')->except('index','show');
+        // $this->middleware('auth')->except('index','show');
      }
 
 
     public function index()
     {
-        $images = ImagePost::paginate(20)->onEachSide(1);
+        $images = ImagePost::paginate(1)->onEachSide(1);
 
         return Inertia::render('images/ImagesList',compact('images',));
 
@@ -74,6 +74,7 @@ class ImagePostController extends Controller
     public function show(string $id)
     {
         $image = ImagePost::findorFail($id);
+        dd(1);
         echo "<img src= \"/storage/imagesPost/$image->imagen\" />";
         dd($image);
 
@@ -84,7 +85,8 @@ class ImagePostController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $image = ImagePost::findorFail($id);
+        dd($image);
     }
 
     /**
@@ -100,6 +102,22 @@ class ImagePostController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return response()->json(['message' => 'La imagen ha sido eliminada correctamente']);
+
+        dd(99);
+        $image = ImagePost::findorFail($id);
+        dd($image);
+
+    // Eliminar el archivo de imagen del sistema de almacenamiento
+    Storage::disk('public')->delete('imagesPost/' . $image->imagen);
+
+    // Eliminar el registro de la imagen de la base de datos
+    $image->delete();
+
+    // Retornar una respuesta o realizar otras acciones necesarias
+    // ...
+
+    return response()->json(['message' => 'La imagen ha sido eliminada correctamente']);
+        
     }
 }
