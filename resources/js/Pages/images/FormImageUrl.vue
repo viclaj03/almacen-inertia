@@ -1,12 +1,21 @@
 <template>
     <AppLayout title="New Imagen">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Nueva Imagen
-            </h2>
+            <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Nueva Imagen por URL
+            </h1>
         </template>
 
-        <div class="py-12  col   ">
+
+        <div class="flex justify-center items-center  p-5">
+                <form @submit.prevent="submit" class="bg-gray-800" style="padding:  15px 100px ;">
+                    <label class=" uppercase text-white"  for="url_search">url</label><br/>
+                    <input id="url_search" v-model="form.url_search"  @change="processUrl"/>
+                    {{ form.url_search }}
+                </form>
+            </div>
+
+        <div class="py-12  col">
             <div class="grid grid-cols-2 gap-6   max-w-7xl mx-auto sm:px-6 lg:px-12 ">
                 <div>
                     <Form :validation-schema="mySchema" @submit="submitForm"
@@ -27,8 +36,8 @@
                                 de la imagen</label>
                             <Field name="original_url" v-model="form.original_url" type="text" id="url_imagen"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="URL"/>
-                                <ErrorMessage name="original_url" class="text-green-500 text-xs italic uppercase" />
+                                placeholder="URL" />
+                            <ErrorMessage name="original_url" class="text-green-500 text-xs italic uppercase" />
 
                         </div>
 
@@ -39,8 +48,8 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Danborru</label>
                             <Field name="danbooru_url" v-model="form.danbooru_url" type="url" id="url_danbooru"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="URL"/>
-                                <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
+                                placeholder="URL" />
+                            <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
 
                         </div>
 
@@ -56,16 +65,17 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
                             <Field name="image" type="file" id="imagen"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
-                                @input="handleImageChange" @change="onFileChange"/>
+                                @input="handleImageChange" @change="onFileChange" />
 
-                                <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
                         </div>
 
                         <div v-if="form.image">Peso {{ form.image.type }}</div>
 
                         <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700" v-if="form">
-                            <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" v-if="form.progress"
-                            :style="{ width: form.progress.percentage + '%' }"> {{ form.progress.percentage }} %</div>
+                            <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+                                v-if="form.progress" :style="{ width: form.progress.percentage + '%' }"> {{
+                                    form.progress.percentage }} %</div>
                         </div>
 
                         <div class="text-center">
@@ -94,91 +104,32 @@
   
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Fancybox } from '@fancyapps/ui';
-import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from 'yup';
+
+import { router } from '@inertiajs/vue3';
 
 
-
-const form = useForm({
-    name: "",
-    original_url: "",
-    danbooru_url: "",
-    image: null,
-    pegi18: false,
-})
-
-
-
-const submitForm = () => {
-    //form.validate().then(() => {
-    //if (!form.errors.any()) {
-    // Lógica de envío del formulario
-    form.post('/images');
-    //}
-    // });
-};
-
-const  mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido capullo'),
-    original_url: yup.string().url('pon una url'),
-    danbooru_url: yup
-    .string()
-    .url('Pon una URL válida')
-    .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
-      if (value && value.length > 0) {
-        return /danbooru\.donmai\.us/.test(value);
-      }
-      return true;
-    }),
-    image: yup
-    .mixed().required('Imagen obligatoria')
-    .test('image', 'El archivo debe ser una Imagen', function (value) {
-        
-      if (!['image/jpeg', 'image/webp', 'image/gif', 'image/png','image/mp4'].includes(value.type)  ) {
-       // alert(9)
-       // const allowedFormats = ['image/png', 'image/jpeg'];
-       // return allowedFormats.includes(file.type);
-       return false;
-      }
-   
-
-      //return allowedFormats.includes(file.type);
-     return true;
-    }),
-})
-
-
-
-
-const handleImageChange = (event) => {
-    var file = event.target.files[0];
-    form.image = file;
-    document.getElementById('imagePreview').src = URL.createObjectURL(form.image);
-    document.getElementById('imagePreview').parentElement.href = URL.createObjectURL(form.image);
-
-};
-
-
-const changeColor = (event) => {
-
-    if (!form.pegi18) {
-        document.getElementById('form').classList.add("bg-red-900")
-        document.getElementById('form').classList.remove("bg-zinc-500")
-
-    } else {
-        document.getElementById('form').classList.remove("bg-red-900")
-        document.getElementById('form').classList.add("bg-zinc-500")
-    }
-
-    document.getElementById('form').classList.add("bg-red-900")
-
+const processUrl = () => {
+    alert(99)
+    form.get(route('image.url'));
 }
 
-defineProps({})
+const form = useForm({
+    url_search: "",
+})
+
+
+
+
+
+
+
+
+
+
+
 
 
 

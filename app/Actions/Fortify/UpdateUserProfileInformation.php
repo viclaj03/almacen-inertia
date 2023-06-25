@@ -34,6 +34,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'pegi_18'=> $input['pegi_18']
             ])->save();
         }
     }

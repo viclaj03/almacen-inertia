@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -75,5 +76,12 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+
+    public function changePegui(){
+        $user = User::where('id',Auth::id())->first();
+        $user->pegi_18 = !$user->pegi_18;
+        $user->save();
     }
 }

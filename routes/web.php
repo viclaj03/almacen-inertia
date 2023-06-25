@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ImagePostController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoPostController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,10 @@ use Inertia\Inertia;
 |
 */
 
+
+
+
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -33,7 +38,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
+    Route::get('/dashboardhh', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
@@ -53,5 +58,20 @@ Route::middleware([
 });
 
 */
+
+
+
+
+
+
+
+
+Route::post('/change-pegui', [UserController::class,'changePegui'])->name('user.pegi');
+
 Route::resource('/user',UserController::class)->middleware('auth');
+
 Route::resource('/images',ImagePostController::class);
+Route::get('/upload-image-by-url',[ImagePostController::class,'uploadByUrl'])->name('image.url');
+
+
+Route::resource('/videos',VideoPostController::class)->middleware('auth');

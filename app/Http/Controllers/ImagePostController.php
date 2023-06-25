@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
+require_once('simple_html_dom.php');
+
+
 
 class ImagePostController extends Controller
 {
@@ -23,7 +26,7 @@ class ImagePostController extends Controller
 
     public function index()
     {
-        $images = ImagePost::paginate(1)->onEachSide(1);
+        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->paginate(1)->onEachSide(1);
 
         return Inertia::render('images/ImagesList',compact('images',));
 
@@ -74,7 +77,6 @@ class ImagePostController extends Controller
     public function show(string $id)
     {
         $image = ImagePost::findorFail($id);
-        dd(1);
         echo "<img src= \"/storage/imagesPost/$image->imagen\" />";
         dd($image);
 
@@ -102,22 +104,43 @@ class ImagePostController extends Controller
      */
     public function destroy(string $id)
     {
-        return response()->json(['message' => 'La imagen ha sido eliminada correctamente']);
 
-        dd(99);
-        $image = ImagePost::findorFail($id);
-        dd($image);
+/*return response()->json([
+    'name' => 'Abigail',
+    'state' => 'CA',
+]);*/
 
-    // Eliminar el archivo de imagen del sistema de almacenamiento
-    Storage::disk('public')->delete('imagesPost/' . $image->imagen);
-
-    // Eliminar el registro de la imagen de la base de datos
-    $image->delete();
-
-    // Retornar una respuesta o realizar otras acciones necesarias
-    // ...
-
-    return response()->json(['message' => 'La imagen ha sido eliminada correctamente']);
+        $image = ImagePost::findorFail($id);   
+        
+        Storage::disk('public')->delete('imagesPost/' . $image->video_path);
+        $image->delete();
         
     }
+
+    public function uploadByUrl(Request $request){
+
+
+        if($request->url_search){
+            $html = file_get_html($request->url_search);
+
+            // Extraer la URL de la imagen
+            $image_url = $html->find('div.AdaptiveMedia-photoContainer img', 0)->src;
+            
+            // Extraer los datos del usuario
+            $username = $html->find('div.PermalinkOverlay-content span.username', 0)->plaintext;
+            $name = $html->find('div.PermalinkOverlay-content span.FullNameGroup', 0)->plaintext;
+            
+            echo "URL de la imagen: " . $image_url . "\n";
+            echo "Nombre de usuario: " . $username . "\n";
+            echo "Nombre completo: " . $name . "\n";
+        }else {
+
+        return Inertia::render('images/FormImageUrl');
+
+        }
+    }
+
+
+
+    
 }

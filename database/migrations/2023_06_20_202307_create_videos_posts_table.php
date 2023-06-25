@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('image_posts', function (Blueprint $table) {
+        Schema::create('video_posts', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('original_url')->nullable();
-            $table->string('danbooru_url')->nullable();
+            $table->string('title');
+            $table->text('description')->nullable();
             $table->foreignId('user_post')->nullable()->references('id')->on('users')->nullOnDelete();
-            $table->string('imagen');
             $table->boolean('pegi_18');
             $table->boolean('private')->default('0');
-            $table->string('imagen_hash');
+            $table->string('video_path');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('images');
+        Schema::dropIfExists('video_posts');
     }
 };
