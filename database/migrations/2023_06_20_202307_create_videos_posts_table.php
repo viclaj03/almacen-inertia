@@ -16,10 +16,11 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->foreignId('user_post')->nullable()->references('id')->on('users')->nullOnDelete();
-            $table->boolean('pegi_18');
-            $table->boolean('private')->default('0');
             $table->string('video_path');
+            $table->string('image_path');
+            $table->boolean('pegi_18');
             $table->timestamps();
+            $table->boolean('private')->default('0');
         });
     }
 

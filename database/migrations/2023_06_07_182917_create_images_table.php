@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('imagen');
             $table->boolean('pegi_18');
             $table->boolean('private')->default('0');
+            $table->string('file_ext');
+            $table->integer('file_size');
             $table->string('imagen_hash');
             $table->timestamps();
         });

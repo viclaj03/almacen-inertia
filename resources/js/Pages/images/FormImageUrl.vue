@@ -126,13 +126,6 @@ const form = useForm({
 
 
 
-
-
-
-
-
-
-
 onMounted(() => {
     // Lógica que se ejecutará después de que el componente se haya montado en el DOM
     Fancybox.bind('[data-fancybox]', {

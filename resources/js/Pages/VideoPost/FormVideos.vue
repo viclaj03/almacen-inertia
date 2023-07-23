@@ -32,6 +32,12 @@
 
                         </div>
 
+                        <div class="mb-4 p-5">
+                            <input type="checkbox" v-model="form.pegi18"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                @input="changeColor">
+                            <label for="disabled-checkbox" class="ml-2 text-sm font-medium text-white">+18</label>
+                        </div>
 
                         <div class="mb-4 p-5">
                             <label for="video"
@@ -89,6 +95,7 @@ import * as yup from 'yup';
 const form = useForm({
     title: "",
     original_url: "",
+    pegi18: false,
     video: null,
 })
 
@@ -105,7 +112,7 @@ const submitForm = () => {
 
 const  mySchema = yup.object({
     title: yup.string().required('El nombre es requerido capullo'),
-    url: yup.string().url('pon una url'),
+    original_url: yup.string().url('pon una url'),
     video: yup
     .mixed().required('video obligatoria')
     .test('image', 'El archivo debe ser un video', function (value) {
@@ -137,7 +144,20 @@ const handleImageChange = (event) => {
 
 
 
-defineProps({})
+const changeColor = (event) => {
+
+if (!form.pegi18) {
+    document.getElementById('form').classList.add("bg-red-900")
+    document.getElementById('form').classList.remove("bg-zinc-500")
+
+} else {
+    document.getElementById('form').classList.remove("bg-red-900")
+    document.getElementById('form').classList.add("bg-zinc-500")
+}
+
+document.getElementById('form').classList.add("bg-red-900")
+
+}
 
 
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VideoPost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -14,7 +15,7 @@ class VideoPostController extends Controller
      */
     public function index()
     {
-         $videos = VideoPost::paginate(10);
+         $videos = VideoPost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->paginate(10);
 
         return Inertia::render('VideoPost/VideoList',compact('videos',));
 
@@ -38,23 +39,27 @@ class VideoPostController extends Controller
         $videoPost = new VideoPost();
         $videoPost->title = $request->title;
         $videoPost->description = "Ninguna";
-        $videoPost->url = $request->original_url;
+        
+        $videoPost->pegi_18 = $request->pegi18;
+        $videoPost->private = false;
 
         $video = $request->video;
         $nombrevideo = uniqid().'.'.$video->getClientOriginalExtension();
 
-       Storage::disk('public')->putFileAs('VideosPost', $video, $nombrevideo);
         $videoPost->video_path = $nombrevideo;
+        $videoPost->image_path = $videoPost->pegi_18?'https://img.freepik.com/vector-premium/simbolo-advertencia-signo-menores-18-anos-mayores-18-solo-censurados-dieciocho-anos-mayores-contenido-adultos-prohibido_41737-1113.jpg?w=2000':'https://actualizadoscomunicacion.com/wp-content/uploads/2017/06/youtube-2172750_960_720-794x397.png';
         $videoPost->save();
+        Storage::disk('public')->putFileAs('VideosPost', $video, $nombrevideo);
+
 
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(VideoPost $videoPost)
+    public function show(VideoPost $video)
     {
-        dd($videoPost);
+        return Inertia::render('VideoPost/VideoShow',compact('video',));
     }
 
     /**

@@ -18,7 +18,7 @@
             <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
               <div v-for="video in videos.data" :key="video.id" class="">
                <a data-autoplay="false" :href="'storage/videosPost/' + video.video_path" data-fancybox="video-gallery" >
-                  <img  class="" :src="'storage/videosPost/'+ video.video_path + '#t=0.1'" :alt="video.name">
+                  <img  class="" :src=" video.image_path " :alt="video.name">
                 </a>
                 <div class="bg-white m-3">
                 {{ video.title }}

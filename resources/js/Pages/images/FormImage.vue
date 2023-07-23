@@ -50,18 +50,26 @@
                                 @input="changeColor">
                             <label for="disabled-checkbox" class="ml-2 text-sm font-medium text-white">+18</label>
                         </div>
+aqui
+
+<div>
+    <v-select multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults" placeholder="Buscar usuario"></v-select>
+
+  </div>
+
+
 
                         <div class="mb-4 p-5">
                             <label for="email"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
-                            <Field name="image" type="file" id="imagen"
+                            <Field name="image" type="file" id="imagen" 
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
                                 @input="handleImageChange" @change="onFileChange"/>
 
                                 <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
                         </div>
 
-                        <div v-if="form.image">Peso {{ form.image.type }}</div>
+                        <div v-if="form.image">Peso {{ form.image.size }}</div>
 
                         <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700" v-if="form">
                             <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" v-if="form.progress"
@@ -96,10 +104,12 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
-import { useForm } from '@inertiajs/vue3'
+import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
+import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from 'yup';
+//import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css';
 
 
 
@@ -109,6 +119,7 @@ const form = useForm({
     danbooru_url: "",
     image: null,
     pegi18: false,
+    tags: []
 })
 
 
@@ -138,18 +149,14 @@ const  mySchema = yup.object({
     .mixed().required('Imagen obligatoria')
     .test('image', 'El archivo debe ser una Imagen', function (value) {
         
-      if (!['image/jpeg', 'image/webp', 'image/gif', 'image/png','image/mp4'].includes(value.type)  ) {
-       // alert(9)
-       // const allowedFormats = ['image/png', 'image/jpeg'];
-       // return allowedFormats.includes(file.type);
+      if (![ 'image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png','image/mp4'].includes(value.type)  ) {
        return false;
       }
-   
-
-      //return allowedFormats.includes(file.type);
      return true;
     }),
 })
+
+
 
 
 
@@ -173,21 +180,66 @@ const changeColor = (event) => {
         document.getElementById('form').classList.remove("bg-red-900")
         document.getElementById('form').classList.add("bg-zinc-500")
     }
-
-    document.getElementById('form').classList.add("bg-red-900")
-
 }
 
-defineProps({})
+
+
+
+
 
 
 
 onMounted(() => {
     // Lógica que se ejecutará después de que el componente se haya montado en el DOM
     Fancybox.bind('[data-fancybox]', {
-        // Opciones de configuración de FancyBox
-        // Puedes personalizarlo según tus necesidades
     });
+   
 });
 
 </script>
+
+
+
+<script>
+import vSelect from 'vue-select';
+import axios from 'axios';
+
+// ...
+
+export default {
+  // ...
+  components: {
+    vSelect,
+  },
+  data() {
+    return {
+      form: {
+        // ...
+        tag: null, // Variable para almacenar el usuario seleccionado
+      },
+      searchResults: [], // Lista vacía para almacenar los resultados de búsqueda
+    };
+  },
+  methods: {
+    // Método para buscar usuarios de GitHub
+    onSearch(search) {
+      // Realizar una solicitud a la API de GitHub para buscar usuarios
+      axios.get(`/api/tags?name=${search}`)
+        .then((response) => {
+          // Obtener los resultados de búsqueda de usuarios
+          const tags = response.data;
+          // Almacenar los resultados de búsqueda en searchResults
+          this.searchResults = tags.map((tag) => ({ label: tag.name, value: tag.id }));
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
+  },
+};
+
+
+
+</script>
+
+

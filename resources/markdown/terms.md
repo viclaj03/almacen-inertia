@@ -1,3 +1,5 @@
-# Terms of Service
+# Terminos del servicio
 
-Edit this file to define the terms of service for your application.
+<h3>No ser pendejo ni fascista</h3>
+<a href="/">A casa </a>
+<img class="" src="storage/imagesPost/64af15c440b5f.jpg" >

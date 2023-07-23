@@ -17,6 +17,16 @@ class UserController extends Controller
      public function __construct()
      {
         // $this->middleware('auth',['only' => 'index']);
+
+        $this->middleware(function ($request, $next) {
+            // Verifica si el usuario está autenticado y su ID es igual a 1
+            if (!auth()->check() || auth()->user()->id !== 1) {
+                // Si no es el usuario con ID 1, redirige o devuelve una respuesta no autorizada
+                return redirect('/dashboard')->with('error', 'No tienes permiso para acceder a esta página.');
+            }
+    
+            return $next($request);
+        });
      }
 
 
@@ -81,6 +91,10 @@ class UserController extends Controller
 
     public function changePegui(){
         $user = User::where('id',Auth::id())->first();
+        if($user->id != 1){
+            return;
+        }
+
         $user->pegi_18 = !$user->pegi_18;
         $user->save();
     }

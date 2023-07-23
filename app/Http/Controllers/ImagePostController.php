@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ImagePost;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-
-require_once('simple_html_dom.php');
-
-
+use Mockery\Undefined;
 
 class ImagePostController extends Controller
 {
@@ -26,10 +24,13 @@ class ImagePostController extends Controller
 
     public function index()
     {
-        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->paginate(1)->onEachSide(1);
+
+
+
+        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->paginate(10)->onEachSide(1);
+
 
         return Inertia::render('images/ImagesList',compact('images',));
-
     }
 
     /**
@@ -38,7 +39,6 @@ class ImagePostController extends Controller
     public function create()
     {
         return Inertia::render('images/FormImage');
-
     }
 
     /**
@@ -46,15 +46,10 @@ class ImagePostController extends Controller
      */
     public function store(Request $request)
     {
-
+        dd($request->tags);
         $imagen = $request->image;
-
         $imagenHash = hash_file('md5', $imagen->path());
-
-        
-
         $nombreImagen = uniqid().'.'.$imagen->getClientOriginalExtension();
-        Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
 
         $image = new ImagePost();
         $image->name = $request->name;
@@ -63,22 +58,55 @@ class ImagePostController extends Controller
         $image->user_post = Auth::user()->id;
         $image->pegi_18 = $request->pegi18;
         $image->imagen = $nombreImagen;
+        $image->file_ext = $imagen->getClientOriginalExtension();
+        $image->file_size = $imagen->getSize();
        
        
         $image->imagen_hash = $imagenHash; // aqui el hash
         $image->save();
-        
-        return to_route('images.show',$image->id);
+
+        foreach($request->tags as $tag){
+            $image->tags()->attach($tag['value']);
+         }
+
+
+        Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
+
+        return to_route('images.show',$image);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(ImagePost $image)
     {
-        $image = ImagePost::findorFail($id);
-        echo "<img src= \"/storage/imagesPost/$image->imagen\" />";
-        dd($image);
+        //$image = ImagePost::findorFail($id);
+       // echo "<img src= \"/storage/imagesPost/$image->imagen\" />";
+
+        $tags = $image->tags;
+        $tags->map(function ($tag) {
+            $tag->loadCount('imagePosts');
+            return $tag;
+        });
+        $tag_general = [];
+        $tag_character = [];
+        $tag_artist = [];
+        $tag_copyright = [];
+        $tag_meta = [];
+        foreach($tags as $tag ){
+            if($tag->category  == 0){
+                $tag_general[] = $tag; 
+            } elseif($tag->category == 1 ){
+                $tag_copyright[] = $tag;
+            } elseif($tag->category == 2){
+                $tag_character[] = $tag;
+            } elseif($tag->category == 3){
+                $tag_artist[] = $tag;
+            }elseif($tag->category == 4) {
+                $tag_meta[] = $tag;
+            }
+        }
+        return Inertia::render('images/ImagesShow',compact('image','tag_general','tag_copyright','tag_character','tag_artist','tag_meta'));
 
     }
 
@@ -104,35 +132,18 @@ class ImagePostController extends Controller
      */
     public function destroy(string $id)
     {
-
-/*return response()->json([
-    'name' => 'Abigail',
-    'state' => 'CA',
-]);*/
-
         $image = ImagePost::findorFail($id);   
         
-        Storage::disk('public')->delete('imagesPost/' . $image->video_path);
+        Storage::disk('public')->delete('imagesPost/' . $image->imagen);
         $image->delete();
-        
+       
     }
 
     public function uploadByUrl(Request $request){
 
 
         if($request->url_search){
-            $html = file_get_html($request->url_search);
-
-            // Extraer la URL de la imagen
-            $image_url = $html->find('div.AdaptiveMedia-photoContainer img', 0)->src;
-            
-            // Extraer los datos del usuario
-            $username = $html->find('div.PermalinkOverlay-content span.username', 0)->plaintext;
-            $name = $html->find('div.PermalinkOverlay-content span.FullNameGroup', 0)->plaintext;
-            
-            echo "URL de la imagen: " . $image_url . "\n";
-            echo "Nombre de usuario: " . $username . "\n";
-            echo "Nombre completo: " . $name . "\n";
+            //aqui el scraping a twitter
         }else {
 
         return Inertia::render('images/FormImageUrl');
@@ -142,5 +153,49 @@ class ImagePostController extends Controller
 
 
 
+
+    public function search(Request $request )
+{
+    $tag_id = $request->tags;
+    $tag_name = $request->tags_name;
+
+
+    $imagenesSearch = ImagePost::with('tags');
+
+    if($tag_id){
+        foreach ($tag_id as $tag) {        
+            $imagenesSearch->wherehas('tags', function ($q) use ($tag) {
+                $q->where('tag_id',$tag);
+            });
+        }
+
+    }
+
+    $tags = new Collection();
+    if ($tag_id && $tag_name) {
+        foreach ($tag_id as $index => $tag) {
+            $tags->push([
+                'value' => $tag,
+                'label' => $tag_name[$index],
+            ]);
+        }
+    }
     
+
+
+
+    if(!Auth::user() || (Auth::user() && !Auth::user()->pegi_18) ){
+        $imagenesSearch->where('pegi_18','!=',true);
+    }
+
+    $images = $imagenesSearch->paginate(15);
+
+    $images->withQueryString();
+
+
+
+
+    
+    return Inertia::render('images/ImagesList',compact('images','tags'));
+}  
 }

@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tags_post', function (Blueprint $table) {
+        Schema::create('artists', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('wiki',500);
-            $table->string('type');
-            $table->timestamps();
+            $table->string('name')->nullable(false);
+            $table->foreignId('tag_id')->references('id')->on('tags')->onDelete('cascade');
+            $table->text('other_names')->nullable(); 
         });
     }
 
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags_post');
+        //
     }
 };
