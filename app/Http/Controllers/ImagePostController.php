@@ -27,7 +27,7 @@ class ImagePostController extends Controller
 
 
 
-        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->paginate(10)->onEachSide(1);
+        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->latest()->paginate(10)->onEachSide(1);
 
 
         return Inertia::render('images/ImagesList',compact('images',));
@@ -46,7 +46,8 @@ class ImagePostController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->tags);
+
+        
         $imagen = $request->image;
         $imagenHash = hash_file('md5', $imagen->path());
         $nombreImagen = uniqid().'.'.$imagen->getClientOriginalExtension();
@@ -64,13 +65,18 @@ class ImagePostController extends Controller
        
         $image->imagen_hash = $imagenHash; // aqui el hash
         $image->save();
-
-        foreach($request->tags as $tag){
-            $image->tags()->attach($tag['value']);
-         }
-
-
         Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
+
+       
+
+        if($request->tags){
+            foreach($request->tags as $tag){
+                $image->tags()->attach($tag['value']);
+             }
+        } 
+        
+
+
 
         return to_route('images.show',$image);
     }
@@ -80,8 +86,10 @@ class ImagePostController extends Controller
      */
     public function show(ImagePost $image)
     {
-        //$image = ImagePost::findorFail($id);
-       // echo "<img src= \"/storage/imagesPost/$image->imagen\" />";
+
+        if(($image->pegi_18 && !Auth::user()) || (!Auth::user()->pegi_18 && $image->pegi_18) ){
+            abort(403,'Acceso denegado');
+        }
 
         $tags = $image->tags;
         $tags->map(function ($tag) {
@@ -113,18 +121,51 @@ class ImagePostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(ImagePost $image)
     {
-        $image = ImagePost::findorFail($id);
-        dd($image);
+        $tags = $image->tags;
+
+        $tag_list = [];
+        foreach ($tags as $index => $tag) {
+            $tag_list [] = [
+                'value' => $tag->id,
+                'label' => $tag->name,
+            ];
+            
+        }
+        
+       
+        return Inertia::render('images/FormImage',compact('image','tag_list'));
+
+        
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, ImagePost $image)
     {
-        //
+        
+        //$image = ImagePost::findorFail($id);  
+        $image->name = $request->name;
+        $image->original_url = $request->original_url;
+        $image->danbooru_url = $request->danbooru_url;
+        //$image->user_post = Auth::user()->id;
+        $image->pegi_18 = $request->pegi18;
+        $image->save();
+
+
+        $image->tags()->detach();
+
+        if($request->tags){
+            foreach($request->tags as $tag){
+                $image->tags()->attach($tag['value']);
+             }
+        } 
+
+        return to_route('images.show',$image);
+
     }
 
     /**
@@ -139,20 +180,7 @@ class ImagePostController extends Controller
        
     }
 
-    public function uploadByUrl(Request $request){
-
-
-        if($request->url_search){
-            //aqui el scraping a twitter
-        }else {
-
-        return Inertia::render('images/FormImageUrl');
-
-        }
-    }
-
-
-
+ 
 
     public function search(Request $request )
 {
@@ -198,4 +226,34 @@ class ImagePostController extends Controller
     
     return Inertia::render('images/ImagesList',compact('images','tags'));
 }  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function uploadByUrl(Request $request){
+
+
+    if($request->url_search){
+        //aqui el scraping a twitter
+    }else {
+
+    return Inertia::render('images/FormImageUrl');
+
+    }
+}
+
+
+
+
 }

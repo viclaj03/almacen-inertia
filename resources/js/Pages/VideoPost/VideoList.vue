@@ -17,9 +17,7 @@
           <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
             <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
               <div v-for="video in videos.data" :key="video.id" class="">
-               <a data-autoplay="false" :href="'storage/videosPost/' + video.video_path" data-fancybox="video-gallery" >
                   <img  class="" :src=" video.image_path " :alt="video.name">
-                </a>
                 <div class="bg-white m-3">
                 {{ video.title }}
                 </div>
@@ -47,8 +45,7 @@
   <script setup>
   import AppLayout from '@/Layouts/AppLayout.vue';
   import Pagination from '@/Components/Pagination.vue';
-  import { Fancybox } from '@fancyapps/ui';
-  import '@fancyapps/ui/dist/fancybox/fancybox.css';
+ 
   import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
   import { Link } from '@inertiajs/vue3';
   import { router } from '@inertiajs/vue3';
@@ -70,12 +67,7 @@
   
   
   
-  onMounted(() => {
-    Fancybox.bind('[data-fancybox]', {
-      // Opciones de configuración de FancyBox
-      // Agrega la opción mute: true para reproducir en silencio
-       // Reproducir en silencio
- })},);
+ 
 
   
   

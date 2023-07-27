@@ -1,8 +1,11 @@
 <template>
     <AppLayout title="New Imagen">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Crear Tags
+            <h2 v-if="tag" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Editar:{{ tag.name }} -> {{ tag.id }} {{ tag.category }}
+            </h2>
+            <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Crear Tags {{ tag }}
             </h2>
         </template>
 
@@ -11,6 +14,7 @@
                 <div class="block " style="
     text-align: -webkit-center;
 ">
+
                     <Form :validation-schema="mySchema" @submit="submitForm"
                         class="  w-full max-w-xl   bg-zinc-500 border-green-400 border-2 rounded-2xl" id="form">
                         <div class="mb-4 p-5">
@@ -66,17 +70,17 @@
 
 
                         <div v-if="form.type == 3" class="mb-4 p-5">
-
+                            <h2 class="h2" v-if="tag">
+                                no funciona en edicion
+                            </h2>
                             <label for="url_artist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Url del artista</label>
                             <Field  as="textarea" v-model="form.ulr_artist" name="url_artist"  placeholder="url por linea"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             </Field>
                             <ErrorMessage name="url_artist" class="text-green-500 text-xs italic uppercase" />
                         </div>
-
-
-
                         <div class="text-center">
+                            {{ form.ulr_artist }}
                             <button type="submi"
                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                                 :disabled="form.processing">Guardar</button>
@@ -95,33 +99,32 @@ import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from 'yup';
-import 'vue-select/dist/vue-select.css';
+import { computed } from 'vue';
 
 
-
-
-
+const { tag,url_list } = defineProps(['tag','url_list']); 
 
 
 
 
 const form = useForm({
-    name: "",
-    translate: "",
-    wiki: "",
-    type: -1,
-    ulr_artist:""
-})
+    name: tag ? tag.name : "", // Si hay datos iniciales, utiliza el nombre existente, de lo contrario, deja el campo vacío
+    translate: tag ? tag.translate_esp : "", // Si hay datos iniciales, utiliza la traducción existente, de lo contrario, deja el campo vacío
+    wiki: tag ? tag.wiki : "",
+    type: tag ? tag.category : -1,
+    ulr_artist: tag ? url_list : "",
+});
 
 
 
 const submitForm = () => {
-    //form.validate().then(() => {
-    //if (!form.errors.any()) {
-    // Lógica de envío del formulario
+
+    if(!tag){
     form.post('/tags');
-    //}
-    // });
+    }else{
+    form.put(`/tags/${tag.id}`);
+    }
+
 };
 
 const mySchema = yup.object({

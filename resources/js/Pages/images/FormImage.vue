@@ -1,9 +1,13 @@
 <template>
-    <AppLayout title="New Imagen">
+    <AppLayout title="Formulario Imagen">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 v-if="!image" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Nueva Imagen
             </h2>
+            <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Editando {{ image.name }} {{ image.id }}
+            </h2>
+            
         </template>
 
         <div class="py-12  col   ">
@@ -27,8 +31,8 @@
                                 de la imagen</label>
                             <Field name="original_url" v-model="form.original_url" type="text" id="url_imagen"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="URL"/>
-                                <ErrorMessage name="original_url" class="text-green-500 text-xs italic uppercase" />
+                                placeholder="URL" />
+                            <ErrorMessage name="original_url" class="text-green-500 text-xs italic uppercase" />
 
                         </div>
 
@@ -39,8 +43,8 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Danborru</label>
                             <Field name="danbooru_url" v-model="form.danbooru_url" type="url" id="url_danbooru"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="URL"/>
-                                <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
+                                placeholder="URL" />
+                            <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
 
                         </div>
 
@@ -50,30 +54,32 @@
                                 @input="changeColor">
                             <label for="disabled-checkbox" class="ml-2 text-sm font-medium text-white">+18</label>
                         </div>
-aqui
 
-<div>
-    <v-select multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults" placeholder="Buscar usuario"></v-select>
+                        <div>
+                            <v-select class="text-white" multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults"
+                                placeholder="Etiquetas">
+                            
+                            
+                            </v-select>
 
-  </div>
-
-
-
-                        <div class="mb-4 p-5">
-                            <label for="email"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
-                            <Field name="image" type="file" id="imagen" 
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
-                                @input="handleImageChange" @change="onFileChange"/>
-
-                                <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
                         </div>
 
-                        <div v-if="form.image">Peso {{ form.image.size }}</div>
+                        <div v-if="!image" class="mb-4 p-5">
+                            <label for="email"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
+                            <Field name="image" type="file" id="imagen"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
+                                @input="handleImageChange" @change="onFileChange" />
 
-                        <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700" v-if="form">
-                            <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" v-if="form.progress"
-                            :style="{ width: form.progress.percentage + '%' }"> {{ form.progress.percentage }} %</div>
+                            <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
+                            <div v-if="form.image">Peso {{ form.image.size }}</div>
+                        </div>
+
+
+                        <div  class="w-full bg-gray-200 rounded-full dark:bg-gray-700" v-if="form">
+                            <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+                                v-if="form.progress" :style="{ width: form.progress.percentage + '%' }"> {{
+                                    form.progress.percentage }} %</div>
                         </div>
 
                         <div class="text-center">
@@ -86,15 +92,21 @@ aqui
 
                 <div class=" bg-white">
                     <h1>Imagen</h1>
-                    <a href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
-                        <img src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
+                    <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
+                        <img  src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
+                            id="imagePreview">
+                            
+                    </a>
+
+                    <a v-else :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+                        
+                            <img :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
                             id="imagePreview">
                     </a>
                 </div>
 
             </div>
         </div>
-
 
     </AppLayout>
 </template>
@@ -113,50 +125,102 @@ import 'vue-select/dist/vue-select.css';
 
 
 
+const { image,tag_list } = defineProps(['image','tag_list']); 
+
+
 const form = useForm({
-    name: "",
-    original_url: "",
-    danbooru_url: "",
-    image: null,
-    pegi18: false,
-    tags: []
+    name: image ? image.name :   "",
+    original_url: image ? image.original_url :   "",
+    danbooru_url: image ? image.danbooru_url :   "",
+    image: image ? image:  null,
+    pegi18: image ? !!image.pegi_18 : false,
+    tags: tag_list? tag_list : []
 })
 
 
 
 const submitForm = () => {
-    //form.validate().then(() => {
-    //if (!form.errors.any()) {
-    // Lógica de envío del formulario
+
+
+    if(!image){
     form.post('/images');
-    //}
-    // });
+    }else{
+    form.put(`/images/${image.id}`);
+    }
+
+
 };
 
-const  mySchema = yup.object({
+
+
+
+
+
+const mySchema = yup.object({
     name: yup.string().required('El nombre es requerido capullo'),
-    original_url: yup.string().url('pon una url'),
+    original_url: yup.string().nullable().url('pon una url'),
     danbooru_url: yup
-    .string()
-    .url('Pon una URL válida')
-    .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
-      if (value && value.length > 0) {
-        return /danbooru\.donmai\.us/.test(value);
-      }
-      return true;
-    }),
-    image: yup
-    .mixed().required('Imagen obligatoria')
-    .test('image', 'El archivo debe ser una Imagen', function (value) {
-        
-      if (![ 'image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png','image/mp4'].includes(value.type)  ) {
-       return false;
-      }
-     return true;
-    }),
+        .string().nullable()
+        .url('Pon una URL válida')
+        .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
+            if (value && value.length > 0  ) {
+                
+                return /danbooru\.donmai\.us/.test(value);
+            }
+            return true;
+        }),
+    image:   yup
+        .mixed()
+        .test('image', 'El archivo debe ser una Imagen', function (value) {
+            // Si no se adjunta una nueva imagen y ya existe una imagen, pasa la validación sin comprobaciones adicionales.
+            if (!value && image) {
+                return true;
+            }
+           // console.log('no hay imagen')
+
+
+            if(!value){
+                console.log('no hay imagen')
+                return false;
+            }
+
+            // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
+            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'image/mp4'].includes(value.type)) {
+                return false;
+            }
+            return true;
+        }),
 })
 
 
+
+/*
+const mySchema = yup.object({
+    name: yup.string().required('El nombre es requerido capullo'),
+    original_url: yup.string().url('pon una url'),
+    danbooru_url: yup
+        .string()
+        .url('Pon una URL válida')
+        .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
+            if (value && value.length > 0  ) {
+                
+                return /danbooru\.donmai\.us/.test(value);
+            }
+            return true;
+        }),
+    image:  yup
+        .mixed().
+        required('Imagen obligatoria')
+        .test('image', 'El archivo debe ser una Imagen', function (value) {
+
+            if (!['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'image/mp4'].includes(value.type) && !image) {
+                return false;
+            }
+            return true;
+        }),
+})
+
+*/
 
 
 
@@ -170,7 +234,7 @@ const handleImageChange = (event) => {
 };
 
 
-const changeColor = (event) => {
+const changeColor = () => {
 
     if (!form.pegi18) {
         document.getElementById('form').classList.add("bg-red-900")
@@ -193,7 +257,7 @@ onMounted(() => {
     // Lógica que se ejecutará después de que el componente se haya montado en el DOM
     Fancybox.bind('[data-fancybox]', {
     });
-   
+
 });
 
 </script>
@@ -207,35 +271,35 @@ import axios from 'axios';
 // ...
 
 export default {
-  // ...
-  components: {
-    vSelect,
-  },
-  data() {
-    return {
-      form: {
-        // ...
-        tag: null, // Variable para almacenar el usuario seleccionado
-      },
-      searchResults: [], // Lista vacía para almacenar los resultados de búsqueda
-    };
-  },
-  methods: {
-    // Método para buscar usuarios de GitHub
-    onSearch(search) {
-      // Realizar una solicitud a la API de GitHub para buscar usuarios
-      axios.get(`/api/tags?name=${search}`)
-        .then((response) => {
-          // Obtener los resultados de búsqueda de usuarios
-          const tags = response.data;
-          // Almacenar los resultados de búsqueda en searchResults
-          this.searchResults = tags.map((tag) => ({ label: tag.name, value: tag.id }));
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    // ...
+    components: {
+        vSelect,
     },
-  },
+    data() {
+        return {
+            form: {
+                // ...
+                tag: null, // Variable para almacenar el usuario seleccionado
+            },
+            searchResults: [], // Lista vacía para almacenar los resultados de búsqueda
+        };
+    },
+    methods: {
+        // Método para buscar usuarios de GitHub
+        onSearch(search) {
+            // Realizar una solicitud a la API de GitHub para buscar usuarios
+            axios.get(`/api/tags?name=${search}`)
+                .then((response) => {
+                    // Obtener los resultados de búsqueda de usuarios
+                    const tags = response.data;
+                    // Almacenar los resultados de búsqueda en searchResults
+                    this.searchResults = tags.map((tag) => ({ label: tag.name, value: tag.id }));
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        },
+    },
 };
 
 

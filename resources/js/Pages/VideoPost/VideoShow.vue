@@ -20,18 +20,17 @@
       <div class="mx-auto sm:px-6 lg:px-8">
         <div class="p-3  shadow-xl sm:rounded-lg flex mobile">
           
-          <div class="mx-auto video-show">
-                <img class="" :src="'/storage/videosPost/'+ video.video" :alt="video.name">
-                <div class="bg-gray-600 row-auto" >{{ video.name }} </div>
+          <div class="mx-auto video-show ">            
+                <video class="w-96" :poster="video.image_path" controls muted >
+   <source :src="'/storage/videosPost/'+ video.video_path" type="video/mp4">
+   Your browser does not support the video tag.
+</video>
               </div>
                
           </div>
 
 
-          <video width="320" height="240" :poster="video.image_path" controls muted >
-   <source :src="'/storage/videosPost/'+ video.video_path" type="video/mp4">
-   Your browser does not support the video tag.
-</video>
+          
        
           <div class="break-words">
             <h2>Information</h2>

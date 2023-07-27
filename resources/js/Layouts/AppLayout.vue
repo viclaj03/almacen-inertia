@@ -262,6 +262,9 @@ const changePegi = () => {
                         <ResponsiveNavLink :href="route('videos.index')" :active="route().current('videos.index')">
                             Videos
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('tags.index')" :active="route().current('videos.index')">
+                            Tags
+                        </ResponsiveNavLink>
 
                         
 

@@ -7,7 +7,9 @@ use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use App\Models\Artist;
 use App\Models\ArtistUrl;
+use App\Models\ImagePost;
 use Inertia\Inertia;
+use Laravel\Fortify\Fortify;
 
 class TagController extends Controller
 {
@@ -16,6 +18,9 @@ class TagController extends Controller
      */
     public function index()
     {
+
+        
+
         $tags = Tag::withCount('imagePosts')->paginate(10);   
 
         return Inertia::render('Tags/TagList', compact('tags'));
@@ -70,7 +75,24 @@ class TagController extends Controller
      */
     public function show(Tag $tag)
     {
+
+        $images = ImagePost::wherehas('tags', function ($q) use ($tag) {
+            $q->where('tag_id',$tag->id);
+        })->limit(10)->get();
+
+        $artist= null;
+        $urls = null;
+
+        if($tag->category == 3){
+            $artist = $tag->artist;
+            $urls = $artist->urls;
+        }
+
+       // $artist_url = //
+
         
+        return Inertia::render('Tags/TagShow', compact('tag','images','artist','urls'));
+
     }
 
     /**
@@ -78,7 +100,18 @@ class TagController extends Controller
      */
     public function edit(Tag $tag)
     {
-        //
+
+        $url_list = null;
+
+        if($tag->category == 3){
+            $urls = $tag->artist->urls->pluck('url')->toArray();
+
+        // Convertir las URLs en un solo texto con saltos de línea
+        $url_list = implode("\n", $urls);
+        }
+
+
+        return Inertia::render('Tags/FormTag',compact('tag','url_list'));
     }
 
     /**
@@ -86,8 +119,57 @@ class TagController extends Controller
      */
     public function update(UpdateTagRequest $request, Tag $tag)
     {
-        //
+
+        $tag->name = $request->name;
+        $tag->translate_esp = $request->translate;
+        $tag->wiki = $request->wiki;
+        $tag->category = $request->type;
+
+
+        $dataChanged = false;
+
+
+        if ($tag->category == 3) {
+
+
+            $ulr_artist = $request->ulr_artist;
+            $newUrls = explode("\n", $ulr_artist);
+            $newUrls = array_map('trim', $newUrls);
+            $newUrls = array_filter($newUrls);
+
+            $existingUrls = $tag->artist->urls->pluck('url')->toArray();
+            
+            if ($existingUrls !== $newUrls) {
+                dd($tag->artist->id);
+                $artist = ArtistUrl::where('artist_id', $tag->artist->id);
+                dd($artist);
+                // Eliminar todas las URLs existentes para este tag (opcional, depende de tu lógica)
+                //ArtistUrl::where('artist_id', $tag->id)->delete();
+    
+                // Luego, guardar cada URL nueva en la base de datos
+                /*foreach ($request['ulr_artist'] as $urlData) {
+                    ArtistUrl::create([
+                        'artist_id' => $tag->id,
+                        'url' => $urlData['url'],
+                    ]);
+                }*/
+    
+                $dataChanged = true;
+            }
+        }
+
+        $tag->save();
+
+        if($dataChanged){
+            dd('cambio');
+        } else{
+            return to_route('tags.show',$tag);
+        }
+        
+
+        $tag->save();
     }
+    
 
     /**
      * Remove the specified resource from storage.
