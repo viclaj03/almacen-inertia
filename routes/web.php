@@ -4,6 +4,7 @@ use App\Http\Controllers\ImagePostController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoPostController;
+use App\Models\ImagePost;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,8 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->inRandomOrder()->paginate(10);
+        return Inertia::render('Dashboard',compact('images'));
     })->name('dashboard');
 });
 
@@ -81,5 +83,8 @@ Route::resource('/videos',VideoPostController::class)->middleware('auth');
 
 
 Route::resource('/tags',TagController::class)->middleware('auth');
+
+Route::get('/tags/{id}', [TagController::class, 'show'])->name('tags.show');
+
 
 

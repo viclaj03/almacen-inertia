@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('wiki',500);
+            $table->string('wiki',1250);
             $table->integer('category')->default(0);
             $table->timestamps();
         });

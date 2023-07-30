@@ -9,20 +9,22 @@ use App\Models\Artist;
 use App\Models\ArtistUrl;
 use App\Models\ImagePost;
 use Inertia\Inertia;
-use Laravel\Fortify\Fortify;
+use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
+        $name = $request->name ?? '';
         
 
-        $tags = Tag::withCount('imagePosts')->paginate(10);   
+        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->paginate(20);   
 
+       // dd($tags);
         return Inertia::render('Tags/TagList', compact('tags'));
     }
 
@@ -158,16 +160,16 @@ class TagController extends Controller
             }
         }
 
-        $tag->save();
+        
 
         if($dataChanged){
-            dd('cambio');
+            dd('cambio las url pero no se aplica actualmente ');
         } else{
+            $tag->save();
             return to_route('tags.show',$tag);
         }
         
 
-        $tag->save();
     }
     
 

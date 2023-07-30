@@ -1,5 +1,5 @@
 <template>
-  <AppLayout title="Dashboard">
+  <AppLayout title="Lista de Imagenes">
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -50,7 +50,7 @@
                 <Link :href="route('images.show', image.id)">Enlace </Link>
               </h1>
               <br />
-              <button @click="destroy(image.id)"
+              <button @click="destroy(image)"
                 class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
                 Eliminar
               </button>
@@ -101,12 +101,12 @@ const serchImage = () => {
 
 
 
-async function destroy(id) {
-  if (confirm("Are you sure you want to Delete")) {
+async function destroy(image) {
+  if (confirm("Eliminar imagen " + image.name)) {
 
     //var l = await  axios.delete(`/images/${id}`);
     //console.log(l)
-    router.delete(`/images/${id}`);
+    router.delete(`/images/${image.id}`);
   }
 }
 

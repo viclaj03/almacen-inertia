@@ -56,7 +56,7 @@
                         </div>
 
                         <div>
-                            <v-select class="text-white" multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults"
+                            <v-select class=" " multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults"
                                 placeholder="Etiquetas">
                             
                             
@@ -91,7 +91,6 @@
                 </div>
 
                 <div class=" bg-white">
-                    <h1>Imagen</h1>
                     <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
                         <img  src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
                             id="imagePreview">

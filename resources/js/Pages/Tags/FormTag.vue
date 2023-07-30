@@ -25,6 +25,8 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Titulo" />
                             <ErrorMessage name="name" class="text-green-500 text-xs italic uppercase" />
+                        
+                            <div v-if="form.errors.name" class="text-green-500 text-xs italic uppercase" v-html="form.errors.name"></div>
                         </div>
 
 
@@ -48,7 +50,7 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Descripción" />
                             <ErrorMessage name="wiki" class="text-green-500 text-xs italic uppercase" />
-                            <p class="text-right text-white">{{ form.wiki.length }}/500</p>
+                            <p class="text-right text-white">{{ form.wiki.length }}/1250</p>
 
                         </div>
 
@@ -131,7 +133,7 @@ const mySchema = yup.object({
     name: yup.string().required('El nombre es requerido capullo'),
     translate: yup.string().required('tradución requerida'),
     wiki: yup
-        .string().nullable().min(3, 'Minimo 3').max(500),
+        .string().nullable().min(3, 'Minimo 3').max(1250,'maximo 1250'),
     type: yup.number().required().min(0, "Seelciona una etiqueta").max(5)
 })
 </script>

@@ -26,7 +26,7 @@
 
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">{{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -40,7 +40,7 @@
             <ul v-for="tag in tag_copyright">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">{{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -51,10 +51,10 @@
             </ul>
 
             <h3 class="text-white">Character</h3>
-            <ul v-for="tag in tag_general">
+            <ul v-for="tag in tag_character">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
-                <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">{{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('tags.show', tag)">?</Link> 
+                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -65,10 +65,10 @@
             </ul>
 
             <h3 class="text-white">General</h3>
-            <ul v-for="tag in tag_character">
+            <ul v-for="tag in tag_general">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link> 
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">{{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">    {{ tag.name }}  </Link> {{ tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} {{ tag.id }} </h6>
                   <div class="bg-white text-black">
@@ -81,7 +81,7 @@
             <ul v-for="tag in tag_meta">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">{{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -149,6 +149,9 @@ defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_chara
 
 @media only screen and (max-width: 600px) {
 
+  .tooltip .tooltiptext {
+    display: none !important;
+  }
 
   .list-tags {
     min-width: 0vh;
@@ -180,7 +183,6 @@ defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_chara
 .tooltip {
   position: relative;
   display: inline-block;
-  border-bottom: 1px dotted black;
 }
 
 .tooltip .tooltiptext {
