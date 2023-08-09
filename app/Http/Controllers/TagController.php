@@ -13,18 +13,30 @@ use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
+
+    public function __construct()
+    {
+         $this->middleware('auth')->except('index','show');
+    }
+
+
+
+
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
 
-        $name = $request->name ?? '';
-        
+        $name = $request->search ?? '';
+        $num = $request->num ?? 20;
+       
+       
 
-        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->paginate(20);   
+        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->orWhere('translate_esp','like','%' . $name . '%')->paginate($num)->withQueryString();   
 
-       // dd($tags);
+       // dd($tags,$name);
         return Inertia::render('Tags/TagList', compact('tags'));
     }
 
@@ -80,7 +92,7 @@ class TagController extends Controller
 
         $images = ImagePost::wherehas('tags', function ($q) use ($tag) {
             $q->where('tag_id',$tag->id);
-        })->limit(10)->get();
+        })->inRandomOrder()->limit(10)->get();
 
         $artist= null;
         $urls = null;

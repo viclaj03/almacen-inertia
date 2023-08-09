@@ -12,7 +12,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
 
                   <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
-            <div v-for="image in images.data" :key="image.id" class="">
+            <div v-for="image in images" :key="image.id" class="">
               <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">
                 <img class="" :src="'storage/imagesPost/' + image.imagen" :alt="image.name">
               </a>

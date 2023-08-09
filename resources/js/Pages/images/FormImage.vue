@@ -52,7 +52,12 @@
                             <input type="checkbox" v-model="form.pegi18"
                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                                 @input="changeColor">
-                            <label for="disabled-checkbox" class="ml-2 text-sm font-medium text-white">+18</label>
+                            <label for="disabled-checkbox" class="pr-10 ml-2 text-sm font-medium text-white">NSFW</label>
+                            
+                            <input type="checkbox" v-model="form.private"
+                                class=" w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                >
+                            <label for="disabled-checkbox" class=" ml-2 text-sm font-medium text-white">Private</label>
                         </div>
 
                         <div>
@@ -81,7 +86,7 @@
                                 v-if="form.progress" :style="{ width: form.progress.percentage + '%' }"> {{
                                     form.progress.percentage }} %</div>
                         </div>
-
+                        
                         <div class="text-center">
                             <button type="submi"
                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -133,6 +138,7 @@ const form = useForm({
     danbooru_url: image ? image.danbooru_url :   "",
     image: image ? image:  null,
     pegi18: image ? !!image.pegi_18 : false,
+    private: image ? image.private : false,
     tags: tag_list? tag_list : []
 })
 
@@ -184,7 +190,7 @@ const mySchema = yup.object({
             }
 
             // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'image/mp4'].includes(value.type)) {
+            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4'].includes(value.type)) {
                 return false;
             }
             return true;
@@ -193,33 +199,7 @@ const mySchema = yup.object({
 
 
 
-/*
-const mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido capullo'),
-    original_url: yup.string().url('pon una url'),
-    danbooru_url: yup
-        .string()
-        .url('Pon una URL válida')
-        .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
-            if (value && value.length > 0  ) {
-                
-                return /danbooru\.donmai\.us/.test(value);
-            }
-            return true;
-        }),
-    image:  yup
-        .mixed().
-        required('Imagen obligatoria')
-        .test('image', 'El archivo debe ser una Imagen', function (value) {
 
-            if (!['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'image/mp4'].includes(value.type) && !image) {
-                return false;
-            }
-            return true;
-        }),
-})
-
-*/
 
 
 
@@ -230,6 +210,11 @@ const handleImageChange = (event) => {
     document.getElementById('imagePreview').src = URL.createObjectURL(form.image);
     document.getElementById('imagePreview').parentElement.href = URL.createObjectURL(form.image);
 
+    if(form.name == ""){
+        var prename  = form.image.name.replace(/_/g, ' ');
+        prename = prename.replace(/\..+$/, '');
+        form.name = prename
+    }
 };
 
 
@@ -292,7 +277,7 @@ export default {
                     // Obtener los resultados de búsqueda de usuarios
                     const tags = response.data;
                     // Almacenar los resultados de búsqueda en searchResults
-                    this.searchResults = tags.map((tag) => ({ label: tag.name, value: tag.id }));
+                    this.searchResults = tags.map((tag) => ({  value: tag.id ,label: (tag.name == tag.translate_esp? tag.name: (tag.name + '<->'+ tag.translate_esp)) }));
                 })
                 .catch((error) => {
                     console.error(error);

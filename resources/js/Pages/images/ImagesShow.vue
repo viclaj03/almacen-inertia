@@ -6,11 +6,10 @@
         {{ image.name }}
       </h2>
       <br />
-      <Link :href="route('images.edit',image)"
+      <Link :href="route('images.edit', image)"
         class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
       Editar
       </Link>
-
     </template>
 
 
@@ -26,7 +25,8 @@
 
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
+                  tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -40,7 +40,8 @@
             <ul v-for="tag in tag_copyright">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
+                  tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -53,8 +54,9 @@
             <h3 class="text-white">Character</h3>
             <ul v-for="tag in tag_character">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
-                <Link :href="route('tags.show', tag)">?</Link> 
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('tags.show', tag)">?</Link>
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
+                  tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -67,8 +69,9 @@
             <h3 class="text-white">General</h3>
             <ul v-for="tag in tag_general">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
-                <Link :href="route('tags.show', tag)">?</Link> 
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })">    {{ tag.name }}  </Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('tags.show', tag)">?</Link>
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }} </Link> {{
+                  tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} {{ tag.id }} </h6>
                   <div class="bg-white text-black">
@@ -81,7 +84,8 @@
             <ul v-for="tag in tag_meta">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link  :href="route('image.search', { tags: [tag.id],tags_name:[tag.name] })"> {{ tag.name }}</Link> {{ tag.image_posts_count }} <span class="tooltiptext">
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
+                  tag.image_posts_count }} <span class="tooltiptext">
 
                   <h6>{{ tag.name }} </h6>
                   <div class="bg-white text-black">
@@ -92,7 +96,11 @@
             </ul>
           </div>
           <div class="mx-auto image-show">
-            <img class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
+            <video loop="loop" v-if="image.light_version_imagen" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls muted>
+              <source :src="'/storage/imagesPost/' + image.imagen" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <img v-else class="object-fill image-size" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
             <div class="bg-gray-600 row-auto">{{ image.name }} </div>
           </div>
         </div>
@@ -106,7 +114,7 @@
               :href="image.original_url"><span class="text-blue-600">{{ image.original_url }}</span></a> </p>
           <p v-if="image.danbooru_url" class="text-white">Danbooru: <a target="_blank" :href="image.danbooru_url"> <span
                 class="text-blue-600">{{ image.danbooru_url }}</span></a></p>
-
+          <p class="text-white" v-if="image.private">Imagen privada</p>
         </div>
 
         <div class="extra_information">
@@ -147,6 +155,10 @@ defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_chara
   min-width: 230px;
 }
 
+.image-size {
+  max-width: 100vh;
+}
+
 @media only screen and (max-width: 600px) {
 
   .tooltip .tooltiptext {
@@ -169,9 +181,15 @@ defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_chara
     /* Cambia el orden del segundo elemento */
   }
 
+
+
   .mobile .image-show {
     order: 1;
     /* Cambia el orden del segundo elemento */
+  }
+
+  .image-size {
+    max-width: 100%;
   }
 }
 

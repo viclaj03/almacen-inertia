@@ -10,6 +10,12 @@
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
 
+          <input
+                                type="text"
+                                v-model="search"
+                                placeholder="Search..."
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-60 p-2.5"
+                            />
 
           <table class="table border w-full bg-white">
             <thead>
@@ -54,12 +60,38 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import { watch } from "vue";
+
+
+
+import { router } from '@inertiajs/vue3'
+import { ref } from "vue";
+
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 
 
+const props = defineProps({
+    users: {
+        type: Object,
+        default: () => ({}),
+    },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
+});
 
-defineProps({ users: Array, errors: Object, localUser: Array })
-
+let search = ref(props.filters.search);
+watch(search, (value) => {
+  router.get(
+        "/user",
+        { search: value },
+        {
+            preserveState: false,
+            replace: false,
+        }
+    );
+});
 
 
 onMounted(() => {

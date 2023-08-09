@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, Link, router,useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
 import Dropdown from '@/Components/Dropdown.vue';
@@ -36,7 +36,7 @@ const logout = () => {
 
 const changePegi = () => {
     router.post(route('user.pegi'))
-   // router.post(route('logout'));
+    // router.post(route('logout'));
 
 }
 
@@ -82,7 +82,8 @@ const changePegi = () => {
                                     Videos
                                 </NavLink>
 
-                                <NavLink v-if="$page.props.auth.user.id == 1" :href="route('tags.index')" :active="route().current('tags.index')">
+                                <NavLink v-if="$page.props.auth.user && $page.props.auth.user.id == 1"
+                                    :href="route('tags.index')" :active="route().current('tags.index')">
                                     Tags
                                 </NavLink>
                             </div>
@@ -162,7 +163,7 @@ const changePegi = () => {
                             </div>
 
                             <!-- Settings Dropdown -->
-                            <div class="ml-3 relative">
+                            <div class="ml-3 relative" v-if="$page.props.auth.user">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <button v-if="$page.props.jetstream.managesProfilePhotos"
@@ -195,7 +196,7 @@ const changePegi = () => {
 
                                         <DropdownLink :href="route('profile.show')">
                                             Profile
-                                             
+
 
                                         </DropdownLink>
 
@@ -215,17 +216,30 @@ const changePegi = () => {
 
                                         <DropdownLink as="button">
                                             <label class="relative inline-flex items-center mr-5 cursor-pointer">
-                                                <input type="checkbox" class="sr-only peer" :checked="$page.props.auth.user.pegi_18" @change="changePegi" >
+                                                <input type="checkbox" class="sr-only peer"
+                                                    :checked="$page.props.auth.user.pegi_18" @change="changePegi">
                                                 <div
                                                     class="w-11 h-6 bg-gray-900 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 dark:bg-gray-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600">
                                                 </div>
                                                 <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Pegi
                                                     18</span>
-                                                    
+
                                             </label>
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
+                            </div>
+
+                            <div v-else class=" sm:top-0 sm:right-0 p-6 text-right z-10">
+
+
+                                <Link :href="route('login')"
+                                    class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">
+                                Log in</Link>
+
+                                <Link v-if="canRegister" :href="route('register')"
+                                    class="ml-4 font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">
+                                Register</Link>
                             </div>
                         </div>
                         <!-- Hamburger -->
@@ -249,7 +263,8 @@ const changePegi = () => {
                 </div>
 
                 <!-- Responsive Navigation Menu -->
-                <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }" class="sm:hidden">
+                <div v-if="$page.props.auth.user"
+                    :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }" class="sm:hidden">
                     <div class="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
@@ -265,8 +280,6 @@ const changePegi = () => {
                         <ResponsiveNavLink :href="route('tags.index')" :active="route().current('videos.index')">
                             Tags
                         </ResponsiveNavLink>
-
-                        
 
                     </div>
 
@@ -307,19 +320,20 @@ const changePegi = () => {
                             <!-- Authentication -->
                             <form method="POST" @submit.prevent="logout">
                                 <ResponsiveNavLink as="button">
-                                    Log Out 
+                                    Log Out
                                 </ResponsiveNavLink>
                             </form>
                             <ResponsiveNavLink as="button">
-                            <label class="relative inline-flex items-center mr-5 cursor-pointer">
-                                                <input type="checkbox" class="sr-only peer" :checked="$page.props.auth.user.pegi_18" @change="changePegi" >
-                                                <div
-                                                    class="w-11 h-6 bg-gray-900 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 dark:bg-gray-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600">
-                                                </div>
-                                                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Pegi
-                                                    18</span>
-                                                    
-                                            </label>
+                                <label class="relative inline-flex items-center mr-5 cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" :checked="$page.props.auth.user.pegi_18"
+                                        @change="changePegi">
+                                    <div
+                                        class="w-11 h-6 bg-gray-900 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 dark:bg-gray-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600">
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Pegi
+                                        18</span>
+
+                                </label>
                             </ResponsiveNavLink>
 
                             <!-- Team Management -->
@@ -367,51 +381,53 @@ const changePegi = () => {
                                     </template>
                                 </template>
                             </template>
+                        </div>
                     </div>
                 </div>
+            </nav>
+
+            <!-- Page Heading -->
+            <header v-if="$slots.header" class="bg-white dark:bg-gray-800 shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <slot name="header" />
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main>
+                <slot />
+            </main>
+
+            <footer class=" rounded-lg shadow dark:bg-gray-900 mt-4">
+                <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8">
+                    <div class="sm:flex sm:items-center sm:justify-between">
+                        <a href="/" class="flex items-center mb-4 sm:mb-0">
+                            <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 mr-3" alt="Flowbite Logo" />
+                            <span
+                                class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
+                        </a>
+                        <ul
+                            class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
+                            <li>
+                                <a href="#" class="mr-4 hover:underline md:mr-6 ">About</a>
+                            </li>
+                            <li>
+                                <a href="#" class="mr-4 hover:underline md:mr-6">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="#" class="mr-4 hover:underline md:mr-6 ">Licensing</a>
+                            </li>
+                            <li>
+                                <a href="#" class="hover:underline">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+                <span class="block text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/"
+                        class="hover:underline">Alamacen™</a>. All Rights Reserved.</span>
             </div>
-        </nav>
-
-        <!-- Page Heading -->
-        <header v-if="$slots.header" class="bg-white dark:bg-gray-800 shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <slot name="header" />
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <main>
-            <slot />
-        </main>
-       
-<footer class=" rounded-lg shadow dark:bg-gray-900 mt-4">
-    <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8">
-        <div class="sm:flex sm:items-center sm:justify-between">
-            <a href="/" class="flex items-center mb-4 sm:mb-0">
-                <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 mr-3" alt="Flowbite Logo" />
-                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
-            </a>
-            <ul class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
-                <li>
-                    <a href="#" class="mr-4 hover:underline md:mr-6 ">About</a>
-                </li>
-                <li>
-                    <a href="#" class="mr-4 hover:underline md:mr-6">Privacy Policy</a>
-                </li>
-                <li>
-                    <a href="#" class="mr-4 hover:underline md:mr-6 ">Licensing</a>
-                </li>
-                <li>
-                    <a href="#" class="hover:underline">Contact</a>
-                </li>
-            </ul>
-        </div>
-        <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-        <span class="block text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/" class="hover:underline">Alamacen™</a>. All Rights Reserved.</span>
-    </div>
-</footer>
+        </footer>
 
 
     </div>
-</div>
-</template>
+</div></template>

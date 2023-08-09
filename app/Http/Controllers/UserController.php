@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Request as Request2;
+
 
 class UserController extends Controller
 {
@@ -32,6 +34,17 @@ class UserController extends Controller
 
     public function index()
     {
+
+        return Inertia::render('User',
+        [
+            'users' => User::query()
+                ->when(Request2::input('search'),function($query, $search) {
+                    $query->where('name','like','%'.$search.'%')
+                    ->OrWhere('email','like','%'.$search.'%');
+                })->paginate(6)
+                ->withQueryString(),
+                'filters' => Request2::only(['search'])
+        ]);
 
         $users = User::paginate(10)->onEachSide(1);
         return Inertia::render('User',compact('users',));
@@ -91,9 +104,7 @@ class UserController extends Controller
 
     public function changePegui(){
         $user = User::where('id',Auth::id())->first();
-        if($user->id != 1){
-            return;
-        }
+        
 
         $user->pegi_18 = !$user->pegi_18;
         $user->save();

@@ -13,12 +13,17 @@
         </template>
 
 
-
-
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
-                    <table class="table border w-full bg-white custom-table">
+
+                  <input
+                                type="text"
+                                v-model="search"
+                                placeholder="Search..."
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-60 p-2.5"
+                            />
+                  <table class="table border w-full bg-white custom-table">
                         <thead>
                             <tr>
                                 <th class="boder p-3">id</th>
@@ -60,8 +65,46 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { Link } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
-defineProps({ tags: Array })
+import { watch } from "vue";
+import {router} from '@inertiajs/vue3';
+import { ref } from "vue";
+
+
+
+const props = defineProps({
+    tags: {
+        type: Object,
+        default: () => ({}),
+    },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
+});
+
+
+
+const  submit = () => {
+    router.get('/tags',form).then(reponse => {
+      tags = response;
+    })
+  }
+
+
+  let search = ref(props.filters.search);
+watch(search, (value) => {
+  router.get(
+        "/tags",
+        { search: value },
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
+});
+
+
+
 
 
 

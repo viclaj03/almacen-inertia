@@ -36,13 +36,32 @@ Route::get('/', function () {
 });
 
 Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
+    //'auth:sanctum',
+    //config('jetstream.auth_session'),
+    //'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->inRandomOrder()->paginate(10);
+
+        $user = Auth::user();
+        if ($user) {
+            $images = ImagePost::where(function($query) use ($user) {
+                $query->where(function($subQuery) use ($user) {
+                    $subQuery->where('private', 0)
+                             ->orWhere('user_post', $user->id);
+                });
+                
+                if (!$user->pegi_18) {
+                    $query->where('pegi_18', false);
+                }
+            });
+        } else {
+            $images = ImagePost::where('private', 0)
+                               ->where('pegi_18', false);
+        }
+
+        $images = $images->inRandomOrder()->limit(10)->get();
         return Inertia::render('Dashboard',compact('images'));
+
     })->name('dashboard');
 });
 
@@ -84,7 +103,7 @@ Route::resource('/videos',VideoPostController::class)->middleware('auth');
 
 Route::resource('/tags',TagController::class)->middleware('auth');
 
-Route::get('/tags/{id}', [TagController::class, 'show'])->name('tags.show');
+//Route::get('/tags/{id}', [TagController::class, 'show'])->name('tags.show');
 
 
 
