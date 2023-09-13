@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImagePostRequest;
 use App\Models\ImagePost;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Inertia\Inertia;
 use Mockery\Undefined;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
+use Jenssegers\ImageHash\ImageHash;
+use Jenssegers\ImageHash\Implementations\DifferenceHash;
 
 class ImagePostController extends Controller
 {
@@ -20,12 +23,14 @@ class ImagePostController extends Controller
 
     public function __construct()
     {
-         $this->middleware('auth')->except('index','show');
+         $this->middleware('auth')->except('index','show','search');
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
+
+        $num = $request->num ?? 10;
 
         $user = Auth::user();
 
@@ -39,12 +44,12 @@ class ImagePostController extends Controller
                 if (!$user->pegi_18) {
                     $query->where('pegi_18', false);
                 }
-            })->latest()->paginate(10);
+            })->latest()->paginate($num);
         } else {
             $images = ImagePost::where('private', 0)
                 ->where('pegi_18', false)
                 ->latest()
-                ->paginate(10);
+                ->paginate($num);
         }
 
         // $images = ImagePost::paginate(1);
@@ -67,8 +72,9 @@ class ImagePostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
+    public function store(ImagePostRequest $request)
+    { 
+        //dd('pruebas');
 
         $image = new ImagePost();
 
@@ -107,18 +113,19 @@ $randomTime = rand(1, $duration);
 
             // Asigna la ubicación de la imagen generada al modelo ImagePost
             $image->light_version_imagen = $lightVersionPath;
+            
 
 
 
+        } 
 
-
-        } else {
-            $imagenHash = hash_file('md5', $imagen->path());
-            $image->imagen_hash = $imagenHash;
-        }
-
-
+        if (in_array($extension, $extensionesVideo)) {
         $imagenHash = hash_file('md5', $imagen->path());
+        } else {
+            $hasher = new ImageHash(new DifferenceHash());
+            $hash = $hasher->hash($imagen->path());
+            $imagenHash = $hash->toHex();
+        }
         $nombreImagen = uniqid() . '.' . $extension;
 
 
@@ -146,7 +153,7 @@ $randomTime = rand(1, $duration);
               }
          } 
 
-         dd('ok');
+        // dd('ok');
 
 
         //return to_route('images.show', $image);
@@ -161,7 +168,6 @@ $randomTime = rand(1, $duration);
         if ($image->private) {
             if (!auth() || Auth::user()->id != $image->user_post)
                 abort(403, 'Acceso denegado');
-
         }
 
         if (($image->pegi_18 && !Auth::user()) || (Auth::user() && !Auth::user()->pegi_18 && $image->pegi_18)) {
@@ -200,6 +206,9 @@ $randomTime = rand(1, $duration);
      */
     public function edit(ImagePost $image)
     {
+        if ($image->user_post != null && $image->user_post != Auth::user()->id) {
+            abort(403, 'acceso denegado');
+        }
         $tags = $image->tags;
 
         $tag_list = [];
@@ -222,13 +231,15 @@ $randomTime = rand(1, $duration);
      * Update the specified resource in storage.
      */
     public function update(Request $request, ImagePost $image)
-    {
+    { 
+        if ($image->user_post != null && $image->user_post != Auth::user()->id) {
+            abort(403, 'acceso denegado');
+        }
 
-        //$image = ImagePost::findorFail($id);  
         $image->name = $request->name;
         $image->original_url = $request->original_url;
         $image->danbooru_url = $request->danbooru_url;
-        //$image->user_post = Auth::user()->id;
+        $image->private = $request->private;
         $image->pegi_18 = $request->pegi18;
         $image->save();
 
@@ -268,8 +279,14 @@ $randomTime = rand(1, $duration);
 
     public function search(Request $request)
     {
+
+        $num = $request->num ?? 15;
+
         $tag_id = $request->tags;
         $tag_name = $request->tags_name;
+
+        $tags_disable_id = $request->tags_disable;
+        $tags_disable_name = $request->tags_name_disable;
 
 
         $imagenesSearch = ImagePost::with('tags');
@@ -280,8 +297,18 @@ $randomTime = rand(1, $duration);
                     $q->where('tag_id', $tag);
                 });
             }
-
+            //desabilitadas
         }
+        
+        if($tags_disable_id){
+            foreach ($tags_disable_id as $tag) {
+                $imagenesSearch->whereDoesntHave('tags', function ($q) use ($tag) {
+                    $q->where('tag_id', $tag);
+                });
+            }
+        }
+        
+
 
         $tags = new Collection();
         if ($tag_id && $tag_name) {
@@ -294,21 +321,29 @@ $randomTime = rand(1, $duration);
         }
 
 
+        $tags_disable = new Collection();
+        if ($tags_disable_id && $tags_disable_name) {
+            foreach ($tags_disable_id as $index => $tag) {
+                $tags_disable->push([
+                    'value' => $tag,
+                    'label' => $tags_disable_name[$index],
+                ]);
+            }
+        }
+
+
+
 
 
         if (!Auth::user() || (Auth::user() && !Auth::user()->pegi_18)) {
             $imagenesSearch->where('pegi_18', '!=', true);
         }
 
-        $images = $imagenesSearch->paginate(15);
-
+        $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
 
-
-
-
-
-        return Inertia::render('images/ImagesList', compact('images', 'tags'));
+        
+        return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable'));
     }
 
 

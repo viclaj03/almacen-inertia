@@ -1,5 +1,5 @@
 <template>
-    <AppLayout title="New Imagen">
+    <AppLayout title="New tag">
         <template #header>
             <h2 v-if="tag" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Editar:{{ tag.name }} -> {{ tag.id }} {{ tag.category }}
@@ -50,8 +50,7 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Descripción" />
                             <ErrorMessage name="wiki" class="text-green-500 text-xs italic uppercase" />
-                            <p class="text-right text-white">{{ form.wiki.length }}/1250</p>
-
+                            <p class="text-right text-white">{{ form.wiki.length }}/2500</p>
                         </div>
 
                         <div class="mb-4 p-5">
@@ -82,7 +81,7 @@
                             <ErrorMessage name="url_artist" class="text-green-500 text-xs italic uppercase" />
                         </div>
                         <div class="text-center">
-                            {{ form.ulr_artist }}
+                           
                             <button type="submi"
                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                                 :disabled="form.processing">Guardar</button>
@@ -133,7 +132,7 @@ const mySchema = yup.object({
     name: yup.string().required('El nombre es requerido capullo'),
     translate: yup.string().required('tradución requerida'),
     wiki: yup
-        .string().nullable().min(3, 'Minimo 3').max(1250,'maximo 1250'),
+        .string().nullable().min(3, 'Minimo 3').max(2500,'maximo 2500'),
     type: yup.number().required().min(0, "Seelciona una etiqueta").max(5)
 })
 </script>

@@ -17,7 +17,7 @@
           <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
             <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
               <div v-for="video in videos.data" :key="video.id" class="">
-                  <img  class="" :src=" video.image_path " :alt="video.name">
+                <img  class="" :src="'/storage/light_versions2/' + video.image_path" :alt="video.name">
                 <div class="bg-white m-3">
                 {{ video.title }}
                 </div>

@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->string('wiki',2500);
-            $table->integer('category')->default(0);
-            $table->timestamps();
+        Schema::table('video_posts', function (Blueprint $table) {
+            $table->string('url_original')->after('pegi_18')->nullable();
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags_post');
+        Schema::table('videos_post', function (Blueprint $table) {
+            //
+        });
     }
 };

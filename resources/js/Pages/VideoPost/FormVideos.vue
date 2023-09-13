@@ -1,5 +1,5 @@
 <template>
-    <AppLayout title="New Imagen">
+    <AppLayout title="New Video">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Nueva Video

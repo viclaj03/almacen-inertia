@@ -2,7 +2,7 @@
     <AppLayout title="Formulario Imagen">
         <template #header>
             <h2 v-if="!image" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Nueva Imagen
+                Nueva Imagen 
             </h2>
             <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Editando {{ image.name }} {{ image.id }}
@@ -44,6 +44,7 @@
                             <Field name="danbooru_url" v-model="form.danbooru_url" type="url" id="url_danbooru"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="URL" />
+                                <div v-if="form.errors.danbooru_url" class="text-green-500 text-xs italic uppercase" v-html="form.errors.danbooru_url"></div>
                             <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
 
                         </div>
@@ -70,14 +71,24 @@
                         </div>
 
                         <div v-if="!image" class="mb-4 p-5">
-                            <label for="email"
+                            <label for="image"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
-                            <Field name="image" type="file" id="imagen"
+                            <Field name="image" type="file" id="imagen" 
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
-                                @input="handleImageChange" @change="onFileChange" />
+                                @input="handleImageChange" @change="onFileChange"  />
 
                             <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
-                            <div v-if="form.image">Peso {{ form.image.size }}</div>
+
+                            <div v-if="form.errors.image" class="text-green-500 text-xs italic uppercase" v-html="form.errors.image"></div>
+
+                            <div v-if="form.errors.image">
+                            <input type="checkbox" v-model="form.hash_ignore"
+                                class=" w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                >
+                            <label for="disabled-checkbox" class=" ml-2 text-sm font-medium text-white">Ignorar hash </label>
+                        </div>
+
+                            <div v-if="form.image">Peso {{ form.image.size }}, Formato : {{ form.image.type }}</div>
                         </div>
 
 
@@ -95,7 +106,7 @@
                     </Form>
                 </div>
 
-                <div class=" bg-white">
+                <div class="">
                     <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
                         <img  src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
                             id="imagePreview">
@@ -138,8 +149,9 @@ const form = useForm({
     danbooru_url: image ? image.danbooru_url :   "",
     image: image ? image:  null,
     pegi18: image ? !!image.pegi_18 : false,
-    private: image ? image.private : false,
-    tags: tag_list? tag_list : []
+    private: image ? !!image.private : false,
+    tags: tag_list? tag_list : [],
+    hash_ignore: false
 })
 
 
@@ -148,7 +160,22 @@ const submitForm = () => {
 
 
     if(!image){
-    form.post('/images');
+    form.post('/images',
+    {
+        onSuccess: () => {
+    
+    form.image = null
+    if(confirm('Subido:clear form?')){
+        form.name = ""
+    form.original_url = ""
+    }
+    form.danbooru_url = ""
+    document.getElementById('imagePreview').src = 'https://www.w3schools.com/tags/img_girl.jpg';
+  },
+    }
+    
+    );
+     
     }else{
     form.put(`/images/${image.id}`);
     }
@@ -170,7 +197,7 @@ const mySchema = yup.object({
         .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
             if (value && value.length > 0  ) {
                 
-                return /danbooru\.donmai\.us/.test(value);
+                //return /danbooru\.donmai\.us/.test(value);
             }
             return true;
         }),
@@ -182,7 +209,7 @@ const mySchema = yup.object({
                 return true;
             }
            // console.log('no hay imagen')
-
+           console.log(value)
 
             if(!value){
                 console.log('no hay imagen')
@@ -190,8 +217,10 @@ const mySchema = yup.object({
             }
 
             // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4'].includes(value.type)) {
+            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4','image/avif'].includes(value.type)) {
+                console.log(value)
                 return false;
+                
             }
             return true;
         }),
@@ -205,7 +234,8 @@ const mySchema = yup.object({
 
 
 const handleImageChange = (event) => {
-    var file = event.target.files[0];
+    form.clearErrors()
+    var file =  event.target.files[0];
     form.image = file;
     document.getElementById('imagePreview').src = URL.createObjectURL(form.image);
     document.getElementById('imagePreview').parentElement.href = URL.createObjectURL(form.image);

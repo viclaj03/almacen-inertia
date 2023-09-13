@@ -19,8 +19,9 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
                     <div >
-                        <div class="text-white wiki">
-                        {{ tag.wiki }}
+                        <div  class="text-block text-gray-800 dark:text-gray-200">
+                        {{ tag.wiki }} 
+                       
                     </div>
                         <div v-if="tag.category == 3 && artist" class="list-irl">
                             
@@ -30,8 +31,8 @@
                             </div>
                         <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images" :key="image.id" class="">
-                <img class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
-              <div class="bg-white uppercase text-center ">
+                <img v-if="image.light_version_imagen" class="" :src="'/storage/light_versions/' + image.light_version_imagen" :alt="image.name">
+                <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">              <div class="bg-white uppercase text-center ">
                 {{ image.name }}
               </div>
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
@@ -67,5 +68,8 @@ defineProps({ tag: Object,images: Array, artist:Object, urls: Array })
     }
 }
 
+.text-block {
+    white-space: pre-line; 
+}
 
 </style>

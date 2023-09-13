@@ -1,5 +1,5 @@
 <template>
-  <AppLayout title="Dashboard">
+  <AppLayout :title="image.name">
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -19,7 +19,7 @@
       <div class="mx-auto sm:px-6 lg:px-8">
         <div class="p-3  shadow-xl sm:rounded-lg flex mobile">
           <div class="list-tags">
-            <h3 class="text-white">Artist</h3>
+            <h3 class="text-gray-800 dark:text-gray-200">Artist</h3>
 
             <ul v-for="tag in tag_artist">
 
@@ -36,7 +36,7 @@
               </li>
             </ul>
 
-            <h3 class="text-white">Copyright</h3>
+            <h3 class="text-gray-800 dark:text-gray-200">Copyright</h3>
             <ul v-for="tag in tag_copyright">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
@@ -51,7 +51,7 @@
               </li>
             </ul>
 
-            <h3 class="text-white">Character</h3>
+            <h3 class="text-gray-800 dark:text-gray-200">Character</h3>
             <ul v-for="tag in tag_character">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
@@ -66,7 +66,7 @@
               </li>
             </ul>
 
-            <h3 class="text-white">General</h3>
+            <h3 class="text-gray-800 dark:text-gray-200">General</h3>
             <ul v-for="tag in tag_general">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
@@ -80,7 +80,7 @@
                 </span>
               </li>
             </ul>
-            <h3 class="text-white">Meta</h3>
+            <h3 class="text-gray-800 dark:text-gray-200">Meta</h3>
             <ul v-for="tag in tag_meta">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
@@ -96,7 +96,7 @@
             </ul>
           </div>
           <div class="mx-auto image-show">
-            <video loop="loop" v-if="image.light_version_imagen" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls muted>
+            <video loop="loop" v-if="image.light_version_imagen" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls >
               <source :src="'/storage/imagesPost/' + image.imagen" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -107,14 +107,15 @@
 
         <div class="break-words">
           <h2>Information</h2>
-          <p class="text-white">ID: <span>{{ image.id }}</span></p>
-          <p class="text-white">Subido: <span>{{ image.created_at }}</span></p>
-          <p class="text-white">Peso: <span>{{ image.file_size }}</span></p>
-          <p v-if="image.original_url" class="text-white">Original url: <a target="_blank"
+          <p class="text-gray-800 dark:text-gray-200">ID: <span>{{ image.id }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">Subido: <span>{{ image.created_at }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">Peso: <span>{{ image.file_size }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">Hash: <span>{{ image.imagen_hash }}</span></p>
+          <p v-if="image.original_url" class="text-gray-800 dark:text-gray-200">Original url: <a target="_blank"
               :href="image.original_url"><span class="text-blue-600">{{ image.original_url }}</span></a> </p>
-          <p v-if="image.danbooru_url" class="text-white">Danbooru: <a target="_blank" :href="image.danbooru_url"> <span
+          <p v-if="image.danbooru_url" class="text-gray-800 dark:text-gray-200">Danbooru: <a target="_blank" :href="image.danbooru_url"> <span
                 class="text-blue-600">{{ image.danbooru_url }}</span></a></p>
-          <p class="text-white" v-if="image.private">Imagen privada</p>
+          <p class="text-gray-800 dark:text-gray-200" v-if="image.private">Imagen privada</p>
         </div>
 
         <div class="extra_information">

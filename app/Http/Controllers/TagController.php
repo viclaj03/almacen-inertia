@@ -10,6 +10,7 @@ use App\Models\ArtistUrl;
 use App\Models\ImagePost;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TagController extends Controller
 {
@@ -17,6 +18,16 @@ class TagController extends Controller
     public function __construct()
     {
          $this->middleware('auth')->except('index','show');
+
+         $this->middleware(function ($request, $next) {
+            // Verifica si el usuario está autenticado y su ID es igual a 1
+            if (!auth()->check() || auth()->user()->id !== 1) {
+                // Si no es el usuario con ID 1, redirige o devuelve una respuesta no autorizada
+                return redirect('/dashboard')->with('error', 'No tienes permiso para acceder a esta página.');
+            }
+    
+            return $next($request);
+        });
     }
 
 
@@ -31,10 +42,11 @@ class TagController extends Controller
 
         $name = $request->search ?? '';
         $num = $request->num ?? 20;
+        $orderBy = $request->order ?? 'id'; //image_posts_count
        
        
 
-        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->orWhere('translate_esp','like','%' . $name . '%')->paginate($num)->withQueryString();   
+        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->orWhere('translate_esp','like','%' . $name . '%')->orderBy($orderBy, 'asc') ->paginate($num)->withQueryString();   
 
        // dd($tags,$name);
         return Inertia::render('Tags/TagList', compact('tags'));
@@ -92,7 +104,13 @@ class TagController extends Controller
 
         $images = ImagePost::wherehas('tags', function ($q) use ($tag) {
             $q->where('tag_id',$tag->id);
-        })->inRandomOrder()->limit(10)->get();
+        });//->inRandomOrder()->limit(10)->get();
+
+        if (!Auth::user() || (Auth::user() && !Auth::user()->pegi_18)) {
+            $images->where('pegi_18', '!=', true);
+        }
+
+        $images = $images->inRandomOrder()->limit(10)->get();
 
         $artist= null;
         $urls = null;

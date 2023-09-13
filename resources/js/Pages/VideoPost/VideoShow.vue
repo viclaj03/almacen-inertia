@@ -21,7 +21,7 @@
         <div class="p-3  shadow-xl sm:rounded-lg flex mobile">
           
           <div class="mx-auto video-show ">            
-                <video class="w-96" :poster="video.image_path" controls muted >
+                <video class="w-96" :poster="'/storage/light_versions2/' + video.image_path" controls muted >
    <source :src="'/storage/videosPost/'+ video.video_path" type="video/mp4">
    Your browser does not support the video tag.
 </video>
@@ -33,13 +33,11 @@
           
        
           <div class="break-words">
-            <h2>Information</h2>
+            <h2>Information {{ video.title }}</h2>
             <p class="text-white">ID: <span>{{ video.id }}</span></p>
             <p class="text-white">Subido: <span>{{ video.created_at }}</span></p>
             <p class="text-white">Peso: <span>{{ video.file_size }}</span></p>
             <p v-if="video.original_url" class="text-white">Original url: <a target="_blank" :href="video.original_url"><span class="text-blue-600">{{ video.original_url }}</span></a> </p>
-            <p v-if="video.danbooru_url" class="text-white">Danbooru: <a target="_blank" :href="video.danbooru_url"> <span class="text-blue-600">{{ video.danbooru_url }}</span></a></p>
-
           </div>
 
           <div class="extra_information">

@@ -76,7 +76,7 @@ const changePegi = () => {
                                 </NavLink>
 
                                 <NavLink :href="route('images.index')" :active="route().current('image.index')">
-                                    Images
+                                    Posts
                                 </NavLink>
                                 <NavLink :href="route('videos.index')" :active="route().current('videos.index')">
                                     Videos
@@ -86,6 +86,54 @@ const changePegi = () => {
                                     :href="route('tags.index')" :active="route().current('tags.index')">
                                     Tags
                                 </NavLink>
+
+                                <div aria-expanded="false" aria-haspopup="false"
+                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out">
+                                    
+                                    <Dropdown>
+                                    <template #trigger>
+                                        <span  class="inline-flex rounded-md">
+                                            <button type="button"
+                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700 active:bg-gray-50 dark:active:bg-gray-700 transition ease-in-out duration-150">
+                                                Otros
+                                                <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </template>
+
+                                    <template #content>
+                                        <!-- Account Management -->
+                                        <div class="block px-4 py-2 text-xs text-gray-400">
+                                            Otros apartados(sin acabar)
+                                        </div>
+
+                                        <DropdownLink :href="route('profile.show')">
+                                            Juegos (no va)
+                                        </DropdownLink>
+                                        <DropdownLink :href="route('profile.show')">
+                                            Libros (no va)
+                                        </DropdownLink>
+                                        <DropdownLink active="true">
+                                            FIcha personajeno ??
+                                        </DropdownLink>
+                                        <a active="true" href="https://youtu.be/36n3hPpyq9Q?si=IrQUy6wzR17fWlAr&t=24"  class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-800 transition duration-150 ease-in-out">
+                                            seccion porno
+                                        </a>
+
+                                        
+
+
+                                        
+                                        
+                                    </template>
+                                </Dropdown>
+                            </div>
+
                             </div>
                         </div>
 
@@ -263,7 +311,7 @@ const changePegi = () => {
                 </div>
 
                 <!-- Responsive Navigation Menu -->
-                <div v-if="$page.props.auth.user"
+                <div 
                     :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }" class="sm:hidden">
                     <div class="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
@@ -271,13 +319,13 @@ const changePegi = () => {
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink :href="route('images.index')" :active="route().current('images.index')">
-                            Imagen
+                            Posts
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink :href="route('videos.index')" :active="route().current('videos.index')">
                             Videos
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('tags.index')" :active="route().current('videos.index')">
+                        <ResponsiveNavLink :href="route('tags.index')" :active="route().current('tags.index')">
                             Tags
                         </ResponsiveNavLink>
 
@@ -290,7 +338,7 @@ const changePegi = () => {
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+                    <div v-if="$page.props.auth.user" class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 mr-3">
                                 <img class="h-10 w-10 rounded-full object-cover"
@@ -423,10 +471,10 @@ const changePegi = () => {
                         </ul>
                     </div>
                     <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-                <span class="block text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/"
-                        class="hover:underline">Alamacen™</a>. All Rights Reserved.</span>
-            </div>
-        </footer>
+                    <span class="block text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/"
+                            class="hover:underline">Alamacen™</a>. All Rights Reserved.</span>
+                </div>
+            </footer>
 
 
     </div>

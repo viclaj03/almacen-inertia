@@ -60,9 +60,14 @@ Route::middleware([
         }
 
         $images = $images->inRandomOrder()->limit(10)->get();
-        return Inertia::render('Dashboard',compact('images'));
-
-    })->name('dashboard');
+        $numImages = ImagePost::count();
+        $numImages18 = ImagePost::where('pegi_18', '!=', true)->count();
+        $imagesFaltan = ImagePost::wherehas('tags', function($q){
+            $q->where('tag_id',9);
+        })->count();
+        
+        return Inertia::render('Dashboard',compact('images','numImages','numImages18','imagesFaltan'));
+    })->name('dashboard')->middleware(['verified']);
 });
 
 /*
@@ -103,7 +108,13 @@ Route::resource('/videos',VideoPostController::class)->middleware('auth');
 
 Route::resource('/tags',TagController::class)->middleware('auth');
 
-//Route::get('/tags/{id}', [TagController::class, 'show'])->name('tags.show');
+Route::get('/descargar-db', function () {
+    $exportFileName = 'exported-database.sql'; // Cambia el nombre según lo necesites.
+        Storage::disk('local')->put($exportFileName, $exportedData);
 
+        // Genera un enlace de descarga y redirige al usuario.
+        $downloadLink = route('export.database.download', ['fileName' => $exportFileName]);
+
+});
 
 

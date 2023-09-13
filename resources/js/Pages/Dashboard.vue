@@ -3,19 +3,19 @@
     <AppLayout title="Dashboard">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Dashboard 
+                Escritoria
             </h2>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-
+                  Numero de imagens:{{numImages}} Numero 18: {{numImages18 }} Numero Faltan : {{ imagesFaltan }}
                   <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images" :key="image.id" class="">
               <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">
-                <img class="" :src="'storage/imagesPost/' + image.imagen" :alt="image.name">
-              </a>
+                <img v-if="image.light_version_imagen" class="" :src="'/storage/light_versions/' + image.light_version_imagen" :alt="image.name">
+                <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">              </a>
               <div class="bg-white uppercase text-center">
                 {{ image.name }}
               </div>
@@ -43,13 +43,14 @@ import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
+import { object } from 'yup';
 
 
 
 
 
 
-defineProps({ images: Array,tags:Array })
+defineProps({ images: Array,tags:Array, numImages: Object, numImages18:Object, imagesFaltan:Object })
 
 
 
