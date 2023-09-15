@@ -30,6 +30,8 @@ class ImagePostController extends Controller
     public function index(Request $request)
     {
 
+        
+
         $num = $request->num ?? 10;
 
         $user = Auth::user();
@@ -165,6 +167,11 @@ $randomTime = rand(1, $duration);
     public function show(ImagePost $image)
     {
 
+
+        
+        
+           
+
         if ($image->private) {
             if (!auth() || Auth::user()->id != $image->user_post)
                 abort(403, 'Acceso denegado');
@@ -280,6 +287,8 @@ $randomTime = rand(1, $duration);
     public function search(Request $request)
     {
 
+        
+
         $num = $request->num ?? 15;
 
         $tag_id = $request->tags;
@@ -341,6 +350,11 @@ $randomTime = rand(1, $duration);
 
         $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
+
+
+
+
+
 
         
         return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable'));

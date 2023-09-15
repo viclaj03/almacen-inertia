@@ -40,7 +40,7 @@
 
                         <div class="mb-4 p-5">
                             <label for="url_danbooru"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Danborru</label>
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Extra</label>
                             <Field name="danbooru_url" v-model="form.danbooru_url" type="url" id="url_danbooru"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="URL" />
@@ -217,7 +217,7 @@ const mySchema = yup.object({
             }
 
             // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4','image/avif'].includes(value.type)) {
+            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4'].includes(value.type)) {
                 console.log(value)
                 return false;
                 

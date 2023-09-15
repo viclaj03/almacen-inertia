@@ -23,18 +23,15 @@ class UniqHash implements ValidationRule
 
         $hasher = new ImageHash(new DifferenceHash());
         $imagenHash =  $hasher->hash($value->path());
-
         $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
             ->first();//cambiar para varias
 
 
-        //dd($similarImages->id);
         
         $image = ImagePost::where('imagen_hash','=',$imagenHash)->first();
         if($similarImages){
             
             $fail('ya existe este hash puedes verlo  <a target="_blank" class="text-white" href="' . route('images.show', $similarImages->id) . '">aquí</a>.');
         }
-
     }
 }

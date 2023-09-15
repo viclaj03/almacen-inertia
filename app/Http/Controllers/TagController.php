@@ -39,6 +39,7 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
+        
 
         $name = $request->search ?? '';
         $num = $request->num ?? 20;
