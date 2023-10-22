@@ -139,6 +139,11 @@ const handleImageChange = (event) => {
    // document.getElementById('videoPreview').src = URL.createObjectURL(form.video);
     document.getElementById('videoPreview').parentElement.href = URL.createObjectURL(form.video);
 
+    if(form.title == ""){
+        var prename  = form.video.name.replace(/_/g, ' ').replace(/-/g, ' ');
+        prename = prename.replace(/\..+$/, '');
+        form.title = prename
+    }
 };
 
 

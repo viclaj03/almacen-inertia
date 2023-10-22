@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
 
+
 class VideoPostController extends Controller
 {
     /**
@@ -38,7 +39,7 @@ class VideoPostController extends Controller
 
     public function index()
     {
-        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(30);
+        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(45);
 
         return Inertia::render('VideoPost/VideoList', compact('videos', ));
 
@@ -67,6 +68,7 @@ class VideoPostController extends Controller
 
         $videoPost->pegi_18 = $request->pegi18;
         $videoPost->private = false;
+        $videoPost->user_post = Auth::user()->id;
 
         $video = $request->video;
         //dd($video);
@@ -79,9 +81,9 @@ class VideoPostController extends Controller
         $videoPath = $video->path();
 
         $ffmpeg = FFMpeg::create([
-            'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+            'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
             // Ruta a ffmpeg en tu sistema
-            'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+            'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
             // Ruta a ffprobe en tu sistema
             'timeout' => 3600,
             'ffmpeg.threads' => 12,

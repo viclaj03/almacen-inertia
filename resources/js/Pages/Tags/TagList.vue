@@ -16,13 +16,23 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
-
-                  <input
+                  <div class="flex  justify-between" preser>
+                  <input preserve-state 
                                 type="text"
                                 v-model="search"
                                 placeholder="Search..."
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-60 p-2.5"
                             />
+                            <select v-model="type" 
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-60 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option  value="" selected >All</option>
+                                <option value="0">General</option>
+                                <option value="1">Copyright</option>
+                                <option value="2">Character</option>
+                                <option value="3">Artist</option>
+                                <option value="4">Meta</option>
+                            </select>
+                            </div>
                   <table class="table border w-full bg-white custom-table">
                         <thead>
                             <tr>
@@ -52,6 +62,8 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="bg-white">
+              </div>
                 <div>
                     <Pagination :links="tags.links" :page="tags.current_page" />
                 </div>
@@ -74,7 +86,7 @@ import { ref } from "vue";
 const props = defineProps({
     tags: {
         type: Object,
-        default: () => ({}),
+       // default: () => ({}),
     },
     filters: {
         type: Object,
@@ -84,21 +96,17 @@ const props = defineProps({
 
 
 
-const  submit = () => {
-    router.get('/tags',form).then(reponse => {
-      tags = response;
-    })
-  }
 
-
-  let search = ref(props.filters.search);
-watch(search, (value) => {
+  let search =  ref(props.filters.search);
+  let type = ref(props.filters.type)
+watch([search, type], ([search, type])  => {
   router.get(
         "/tags",
-        { search: value },
+        { search: search,type:type },
         {
+         
             preserveState: true,
-            replace: true,
+            replace: false,
         }
     );
 });

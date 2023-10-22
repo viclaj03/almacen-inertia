@@ -11,6 +11,7 @@ use App\Models\ImagePost;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request as RequestFilter;
 
 class TagController extends Controller
 {
@@ -39,18 +40,24 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
-        
-
+ 
         $name = $request->search ?? '';
-        $num = $request->num ?? 20;
-        $orderBy = $request->order ?? 'id'; //image_posts_count
-       
-       
+        $num = $request->num ?? 15;
+        $orderBy = $request->order  ?? 'id'; //'image_posts_count';
+        $tags = Tag::withCount('imagePosts')
+        ->where(function ($query) use ($name) {
+            $query->where('name', 'like', '%' . $name . '%')
+                ->orWhere('translate_esp', 'like', '%' . $name . '%');
+        });
+        
+        if($request->type  >-1){
+          $tags =   $tags->where('category',$request->type);
+        }
 
-        $tags = Tag::withCount('imagePosts')->where('name','like','%' . $name . '%')->orWhere('translate_esp','like','%' . $name . '%')->orderBy($orderBy, 'asc') ->paginate($num)->withQueryString();   
-
-       // dd($tags,$name);
-        return Inertia::render('Tags/TagList', compact('tags'));
+        $filters = RequestFilter::all(['search', 'type']);
+        
+        $tags = $tags->orderBy($orderBy, 'asc') ->paginate($num)->withQueryString();   
+        return Inertia::render('Tags/TagList' , compact('tags','filters'));
     }
 
     /**

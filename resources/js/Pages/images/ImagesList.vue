@@ -11,10 +11,7 @@
       Nueva
       </Link>
 
-      <Link :href="route('image.url')" style="right:  10px; cursor: not-allowed; pointer-events: none;"
-        class="  mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-      Por URL deacreted
-      </Link>
+
     </template>
 
 
@@ -34,8 +31,8 @@
               <v-select :filterable="false" multiple v-model="form.tags" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas buscar"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></v-select>
-                <br>
-                <v-select :filterable="false" multiple v-model="form.tags_disable" @search="onSearch" label="label"
+              <br>
+              <v-select :filterable="false" multiple v-model="form.tags_disable" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas desabilitar"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></v-select>
 
@@ -44,11 +41,13 @@
             </div>
           </form>
           <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
-            <div v-for="image in images.data" :key="image.id" class="">
-              <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+            <div v-for="image in images.data" :key="image.id" class="relative ">
+              <a :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+                <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e; " class="absolute right-0" />
+                <div v-if="image.pegi_18" class="nsfw-style absolute">NSFW</div>
                 <img v-if="image.light_version_imagen" class=""
                   :src="'/storage/light_versions/' + image.light_version_imagen" :alt="image.name">
-                <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
+                <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name" :title="image.name">
               </a>
               <div class="bg-white uppercase text-center image-name-list">
                 {{ image.name }}
@@ -56,11 +55,11 @@
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
                 <Link :href="route('images.show', image.id)">Enlace </Link>
               </h1>
-              <br />
-              <button @click="destroy(image)"
-                class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-                Eliminar
-              </button>
+              <div>
+                <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
+                <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
+                <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
+              </div>
             </div>
           </div>
         </div>
@@ -83,14 +82,27 @@ import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { Form, Field, ErrorMessage } from "vee-validate";
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
+//font awesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+//import axios from 'axios';
+/* import specific icons */
+import { faLock, faHeart } from '@fortawesome/free-solid-svg-icons'
+
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
+
+/* add icons to the library */
+library.add(faLock, faHeart, faRegularHeart)
 
 
-const { images, tags,tags_disable } = defineProps(['images', 'tags','tags_disable']);
+const { images, tags, tags_disable } = defineProps(['images', 'tags', 'tags_disable']);
 
 // Usar las propiedades para inicializar form.tags
 const form = useForm({
   tags: tags ? tags : [],
-  tags_disable: tags_disable ?  tags_disable  : []   // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
+  tags_disable: tags_disable ? tags_disable : []   // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
 });
 
 const serchImage = () => {
@@ -100,7 +112,7 @@ const serchImage = () => {
   const selectedTagsDisable = form.tags_disable.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
   const selectedTagsNameDisable = form.tags_disable.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
 
-  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName,tags_disable:selectedTagsDisable,tags_name_disable: selectedTagsNameDisable});
+  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable });
 
 };
 
@@ -112,14 +124,7 @@ const serchImage = () => {
 
 
 
-async function destroy(image) {
-  if (confirm("Eliminar imagen " + image.name)) {
 
-    //var l = await  axios.delete(`/images/${id}`);
-    //console.log(l)
-    router.delete(`/images/${image.id}`);
-  }
-}
 
 
 
@@ -129,10 +134,7 @@ async function destroy(image) {
 
 
 onMounted(() => {
-  // Lógica que se ejecutará después de que el componente se haya montado en el DOM
   Fancybox.bind('[data-fancybox]', {
-    // Opciones de configuración de FancyBox
-    // Puedes personalizarlo según tus necesidades
   });
 
 });
@@ -188,13 +190,17 @@ export default {
 
 
 <style>
+.nsfw-style {
+  color: red;
+  border: 1px dashed red;
+  font-size: 1.5vh;
+}
 
-
-.image-name-list{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 7vh;
-    white-space: nowrap;
+.image-name-list {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 7vh;
+  white-space: nowrap;
 }
 
 
@@ -236,14 +242,9 @@ ul#vs2__listbox {
     max-width: 100%;
     padding: 0 0 5vh 0;
     display: block;
-}
+  }
 
 }
-
-
-
-
-
 </style>
 
 

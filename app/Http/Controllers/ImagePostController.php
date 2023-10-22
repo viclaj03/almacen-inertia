@@ -30,8 +30,6 @@ class ImagePostController extends Controller
     public function index(Request $request)
     {
 
-        
-
         $num = $request->num ?? 10;
 
         $user = Auth::user();
@@ -41,6 +39,7 @@ class ImagePostController extends Controller
                 $query->where(function ($subQuery) use ($user) {
                     $subQuery->where('private', 0)
                         ->orWhere('user_post', $user->id);
+                        
                 });
 
                 if (!$user->pegi_18) {
@@ -54,11 +53,13 @@ class ImagePostController extends Controller
                 ->paginate($num);
         }
 
-        // $images = ImagePost::paginate(1);
+        if ($user) {
+            foreach ($images as $image) {
+                $image->isFavorited = $user->favoriteImages->contains($image->id);
+            }
+        }
 
-
-        //  $images = ImagePost::where('pegi_18' ,false)->orWhere('pegi_18',Auth::user()->pegi_18)->latest()->paginate(10)->onEachSide(1);
-
+       // dd($images);
 
         return Inertia::render('images/ImagesList', compact('images', ));
     }
@@ -76,21 +77,20 @@ class ImagePostController extends Controller
      */
     public function store(ImagePostRequest $request)
     { 
-        //dd('pruebas');
 
         $image = new ImagePost();
 
         $imagen = $request->image;
         $extension = $imagen->getClientOriginalExtension();
-        $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'];
+        $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv','webm'];
 
         if (in_array($extension, $extensionesVideo)) {
             $videoPath = $imagen->path();
             
             $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+                'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
                 // Ruta a ffmpeg en tu sistema
-                'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+                'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
                 // Ruta a ffprobe en tu sistema
                 'timeout' => 3600,
                 'ffmpeg.threads' => 12,
@@ -120,14 +120,20 @@ $randomTime = rand(1, $duration);
 
 
         } 
-
+        //dd(99);
         if (in_array($extension, $extensionesVideo)) {
         $imagenHash = hash_file('md5', $imagen->path());
         } else {
-            $hasher = new ImageHash(new DifferenceHash());
+            try{
+                $hasher = new ImageHash(new DifferenceHash());
+                //dd($imagen->path());
             $hash = $hasher->hash($imagen->path());
             $imagenHash = $hash->toHex();
+            }catch(\Exception $e){
+                echo $e->getMessage();
+            }
         }
+        //dd($imagenHash);
         $nombreImagen = uniqid() . '.' . $extension;
 
 
@@ -142,7 +148,11 @@ $randomTime = rand(1, $duration);
         $image->file_size = $imagen->getSize();
 
 
+
+        //$request->image->hashing_image;
         $image->imagen_hash = $imagenHash;
+        
+
         
         $image->save();
         Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
@@ -166,21 +176,17 @@ $randomTime = rand(1, $duration);
      */
     public function show(ImagePost $image)
     {
-
-
-        
-        
-           
-
+        $user = Auth::user();
         if ($image->private) {
-            if (!auth() || Auth::user()->id != $image->user_post)
+            if (!auth()->user() || Auth::user()->id != $image->user_post)
                 abort(403, 'Acceso denegado');
         }
 
         if (($image->pegi_18 && !Auth::user()) || (Auth::user() && !Auth::user()->pegi_18 && $image->pegi_18)) {
-            abort(403, 'Acceso denegado');
+            abort(403, 'acceso denegado');
         }
 
+        $image->isFavorited = $user?$user->favoriteImages->contains($image->id) : false ;
         $tags = $image->tags;
         $tags->map(function ($tag) {
             $tag->loadCount('imagePosts');
@@ -287,7 +293,7 @@ $randomTime = rand(1, $duration);
     public function search(Request $request)
     {
 
-        
+        $user = Auth::user();
 
         $num = $request->num ?? 15;
 
@@ -298,7 +304,16 @@ $randomTime = rand(1, $duration);
         $tags_disable_name = $request->tags_name_disable;
 
 
-        $imagenesSearch = ImagePost::with('tags');
+        $imagenesSearch = ImagePost::with('tags')->where(function ($query) use ($user) {
+            $query->where(function ($subQuery) use ($user) {
+                $subQuery->where('private', 0);
+                if($user) 
+                    $subQuery->orWhere('user_post', $user->id);
+                    
+            });
+
+            
+        });
 
         if ($tag_id) {
             foreach ($tag_id as $tag) {
@@ -351,41 +366,58 @@ $randomTime = rand(1, $duration);
         $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
 
+        if (Auth::user()) {
+            foreach ($images as $image) {
+                $image->isFavorited = $user->favoriteImages->contains($image->id);
+            }
+        }
 
-
-
-
-
-        
         return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable'));
     }
 
+    public function searchByUniqHash(Request $request){
 
+        $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
+        $images =  ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) <= $threshold")->paginate(10);
+        
+        return Inertia::render('images/ImagesList', compact('images'));
 
-
-
-
-
-
-
-
-
-
-
-
-    public function uploadByUrl(Request $request)
-    {
-
-
-        if ($request->url_search) {
-            //aqui el scraping a twitter
-        } else {
-
-            return Inertia::render('images/FormImageUrl');
-
-        }
     }
+
+
+
+    public function searchByUrl(Request $request){
+        $imagenesSearch = ImagePost::where('url',request('url'));
+    }
+
+
+    public function addFavorite(Request $request){
+
+        $image = ImagePost::findOrFail($request->id);
+
+        if($image->isFavoritedByUser()){
+            //dd($image->favoritedBy->where('user_id',Auth::user()->id));
+            $image->favoritedBy()->detach(Auth::user()->id);
+        } else {
+            $image->favoritedBy()->attach(Auth::user()->id);
+        }
+        
+    }
+
+
+    public function seeFavorite(Request $request){
+        $user = Auth::user();
+        $images = $user->favoriteImages()->latest()->paginate(10);
+        foreach($images as $image){
+            $image->isFavorited = true;
+        }
+
+        return Inertia::render('images/ImagesList', compact('images'));
+        
+    }
+
+    
 
 
 

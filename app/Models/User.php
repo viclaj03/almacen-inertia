@@ -58,4 +58,13 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $appends = [
         'profile_photo_url',
     ];
+
+
+    public function favoriteImages()
+    {
+        return $this->belongsToMany(ImagePost::class, 'favorites_posts', 'user_id', 'image_id');
+    }
+
+
+    
 }

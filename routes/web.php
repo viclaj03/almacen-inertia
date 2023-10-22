@@ -22,7 +22,7 @@ use Inertia\Inertia;
 |
 */
 
-
+//dd("la pagina no va \n favoritos ha fallado, probar con migracion y ayuda");
 
 
 
@@ -58,8 +58,7 @@ Route::middleware([
             $images = ImagePost::where('private', 0)
                                ->where('pegi_18', false);
         }
-
-        $images = $images->inRandomOrder()->limit(10)->get();
+        $images = $images->inRandomOrder()->limit(20)->get();
         $numImages = ImagePost::count();
         $numImages18 = ImagePost::where('pegi_18', '!=', true)->count();
         $imagesFaltan = ImagePost::wherehas('tags', function($q){
@@ -67,7 +66,7 @@ Route::middleware([
         })->count();
         
         return Inertia::render('Dashboard',compact('images','numImages','numImages18','imagesFaltan'));
-    })->name('dashboard')->middleware(['verified']);
+    })->name('dashboard');//->middleware(['verified']) ;
 });
 
 /*
@@ -98,9 +97,14 @@ Route::post('/change-pegui', [UserController::class,'changePegui'])->name('user.
 Route::resource('/user',UserController::class)->middleware('auth');
 
 Route::resource('/images',ImagePostController::class);
-Route::get('/upload-image-by-url',[ImagePostController::class,'uploadByUrl'])->name('image.url');
 
-Route::any('search',[ImagePostController::class,'search'])->name('image.search');
+Route::post('/add-fovorite/{id}',[ImagePostController::class,'addFavorite'])->name('image.addFavorite');
+
+Route::get('/my-favorite',[ImagePostController::class,'seeFavorite'])->name('image.favorite');
+
+Route::any('/search',[ImagePostController::class,'search'])->name('image.search');
+
+Route::get('/UniqHash/{imagenHash}',[ImagePostController::class,'searchByUniqHash'])->name('images.uniqHash');
 
 
 Route::resource('/videos',VideoPostController::class)->middleware('auth');
@@ -108,13 +112,6 @@ Route::resource('/videos',VideoPostController::class)->middleware('auth');
 
 Route::resource('/tags',TagController::class)->middleware('auth');
 
-Route::get('/descargar-db', function () {
-    $exportFileName = 'exported-database.sql'; // Cambia el nombre según lo necesites.
-        Storage::disk('local')->put($exportFileName, $exportedData);
 
-        // Genera un enlace de descarga y redirige al usuario.
-        $downloadLink = route('export.database.download', ['fileName' => $exportFileName]);
-
-});
 
 

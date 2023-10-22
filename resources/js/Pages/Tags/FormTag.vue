@@ -1,10 +1,10 @@
 <template>
     <AppLayout title="New tag">
         <template #header>
-            <h2 v-if="tag" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 v-if="tag" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight ">
                 Editar:{{ tag.name }} -> {{ tag.id }} {{ tag.category }}
             </h2>
-            <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tigh">
                 Crear Tags {{ tag }}
             </h2>
         </template>
@@ -16,7 +16,7 @@
 ">
 
                     <Form :validation-schema="mySchema" @submit="submitForm"
-                        class="  w-full max-w-xl   bg-zinc-500 border-green-400 border-2 rounded-2xl" id="form">
+                        class="  w-full max-w-xl   bg-zinc-500 border-green-400 border-2 rounded-2xl"  :class='"tag-type-" + form.type'   id="form">
                         <div class="mb-4 p-5">
                             <label for="name"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
@@ -24,9 +24,9 @@
                             <Field name="name" v-model="form.name" type="text"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Titulo" />
-                            <ErrorMessage name="name" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="name" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
                         
-                            <div v-if="form.errors.name" class="text-green-500 text-xs italic uppercase" v-html="form.errors.name"></div>
+                            <div v-if="form.errors.name" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" v-html="form.errors.name"></div>
                         </div>
 
 
@@ -37,7 +37,7 @@
                             <Field name="translate" v-model="form.translate" type="text" id="Traducion"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Tradución en Español" />
-                            <ErrorMessage name="translate" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="translate" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
 
                         </div>
 
@@ -49,7 +49,7 @@
                             <Field as="textarea" name="wiki" v-model="form.wiki" type="url" id="Descripción"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Descripción" />
-                            <ErrorMessage name="wiki" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="wiki" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
                             <p class="text-right text-white">{{ form.wiki.length }}/2500</p>
                         </div>
 
@@ -66,7 +66,7 @@
                                 <option value="3">Artist</option>
                                 <option value="4">Meta</option>
                             </Field>
-                            <ErrorMessage name="type" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="type" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
                         </div>
 
 
@@ -78,7 +78,7 @@
                             <Field  as="textarea" v-model="form.ulr_artist" name="url_artist"  placeholder="url por linea"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             </Field>
-                            <ErrorMessage name="url_artist" class="text-green-500 text-xs italic uppercase" />
+                            <ErrorMessage name="url_artist" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
                         </div>
                         <div class="text-center">
                            
@@ -104,7 +104,7 @@ import { computed } from 'vue';
 
 
 const { tag,url_list } = defineProps(['tag','url_list']); 
-
+const bgColour = ['tag-type-0',]
 
 
 
@@ -119,17 +119,21 @@ const form = useForm({
 
 
 const submitForm = () => {
-
     if(!tag){
-    form.post('/tags');
+    form.post('/tags',{
+        preserveScroll: true,
+        onSuccess() {
+            form.reset()
+            form.clearErrors()
+        }
+    }); 
     }else{
     form.put(`/tags/${tag.id}`);
     }
-
 };
 
 const mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido capullo'),
+    name: yup.string().required('El nombre es requerido'),
     translate: yup.string().required('tradución requerida'),
     wiki: yup
         .string().nullable().min(3, 'Minimo 3').max(2500,'maximo 2500'),
@@ -137,3 +141,40 @@ const mySchema = yup.object({
 })
 </script>
 
+<style>
+
+.error-text{
+    color: red;
+}
+/*bg-zinc-500*/
+
+.tag-type--1{
+    background-color: rgb(113 113 122 / var(--tw-bg-opacity));
+}
+
+.tag-type-0{
+    background-color: #009be6;
+}
+
+
+.tag-type-1{
+    background-color: #c797ff;
+}
+
+
+.tag-type-2{
+    background-color: #93e49a;
+}
+
+
+.tag-type-3{
+    background-color: #ff8a8b;
+}
+
+
+.tag-type-4{
+    background-color: #ead084;
+}
+
+
+</style>

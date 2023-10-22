@@ -9,8 +9,10 @@
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg dar">
+                 <div class="dark:text-white">
                   Numero de imagens:{{numImages}} Numero 18: {{numImages18 }} Numero Faltan : {{ imagesFaltan }}
+                </div>
                   <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images" :key="image.id" class="">
               <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">

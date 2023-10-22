@@ -3,7 +3,7 @@
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        {{ image.name }}
+        {{ image.name }} <sup v-if="image.pegi_18" class="nsfw-style">NSFW</sup> <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e;" /> 
       </h2>
       <br />
       <Link :href="route('images.edit', image)"
@@ -25,10 +25,10 @@
 
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('tags.show', tag)">?</Link>
-                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
+                <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }} </Link> {{
                   tag.image_posts_count }} <span class="tooltiptext">
 
-                  <h6>{{ tag.name }} </h6>
+                  <h6>{{ tag.name }} {{tag.name != tag.translate_esp ? (' <-> ' + tag.translate_esp): ''   }} </h6>
                   <div class="bg-white text-black">
                     {{ tag.wiki }}
                   </div>
@@ -102,6 +102,16 @@
             </video>
             <img v-else class="object-fill image-size" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
             <div class="bg-gray-600 row-auto">{{ image.name }} </div>
+            <div>
+                <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
+                <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
+                <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
+              </div>
+
+            <div><button @click="destroy(image)"
+                class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+                Eliminar
+              </button></div>
           </div>
         </div>
 
@@ -134,7 +144,20 @@ import Pagination from '@/Components/Pagination.vue';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
+
+/* import the fontawesome core */
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 //import axios from 'axios';
+/* import specific icons */
+import { faLock, faHeart } from '@fortawesome/free-solid-svg-icons'
+
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
+
+/* add icons to the library */
+library.add(faLock, faHeart, faRegularHeart)
 
 
 
@@ -143,7 +166,14 @@ import { router } from '@inertiajs/vue3';
 defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, })
 
 
-
+async function destroy(image) {
+  if (confirm("Eliminar imagen " + image.name)) {
+   // alert(999)
+    //var l = await  axios.delete(`/images/${id}`);
+    //console.log(l)
+    router.delete(`/images/${image.id}`);
+  }
+}
 
 
 </script>
@@ -151,7 +181,12 @@ defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_chara
   
   
 
-<style>
+<style scoped>
+.nsfw-style{
+  color: red;
+  border: 1px dashed red;
+  font-size: 1.5vh;
+}
 .list-tags {
   min-width: 230px;
 }

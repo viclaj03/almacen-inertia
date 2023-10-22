@@ -18,13 +18,9 @@ class TagController extends Controller
         $name = $request->input('name')??null;
 
         $tags = Tag::when($name, function ($query, $name) {
-            return $query->where('name', 'LIKE', '%' . $name . '%')->orWhere('translate_esp','LiKE','%' . $name . '%');
+            return $query->where('name', 'LIKE', '%' . $name . '%')->orWhere('translate_esp','LiKE','%' . $name . '%')->orderBy('category','asc','name');
         })
-        ->limit(10)->get();
-    
-
-        
-
+        ->limit(15)->get();
         return $tags;
     }
 

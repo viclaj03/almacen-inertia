@@ -1,11 +1,11 @@
 <template>
-    <AppLayout title="Formulario Imagen">
+    <AppLayout :title="!image?'Formulario Imagen':'Editando ' + image.name">
         <template #header>
             <h2 v-if="!image" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Nueva Imagen 
             </h2>
             <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Editando {{ image.name }} {{ image.id }}
+                Editando  {{ image.id }}: {{ image.name }} 
             </h2>
             
         </template>
@@ -14,7 +14,7 @@
             <div class="grid grid-cols-2 gap-6   max-w-7xl mx-auto sm:px-6 lg:px-12 ">
                 <div>
                     <Form :validation-schema="mySchema" @submit="submitForm"
-                        class="  w-full max-w-xl   bg-zinc-500 border-green-400 border-2 rounded-2xl" id="form">
+                        class="  w-full max-w-xl    border-green-400 border-2 rounded-2xl" id="form" :class="{'bg-red-600':form.pegi18,'bg-slate-600':!form.pegi18}">
                         <div class="mb-4 p-5">
                             <label for="name"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
@@ -88,7 +88,7 @@
                             <label for="disabled-checkbox" class=" ml-2 text-sm font-medium text-white">Ignorar hash </label>
                         </div>
 
-                            <div v-if="form.image">Peso {{ form.image.size }}, Formato : {{ form.image.type }}</div>
+                            <div v-if="form.image">Peso {{ form.image.size }}, Formato : {{ form.image.type }}</div> 
                         </div>
 
 
@@ -106,7 +106,9 @@
                     </Form>
                 </div>
 
-                <div class="">
+                <div class="relative">
+                    <font-awesome-icon v-if="form.private"  icon="lock" style="color: #eae43e; " class="candado-private" /> 
+
                     <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
                         <img  src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
                             id="imagePreview">
@@ -114,8 +116,13 @@
                     </a>
 
                     <a v-else :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+
+
+                  <img v-if="image.light_version_imagen" class=""
+                  :src="'/storage/light_versions/' + image.light_version_imagen" alt="image" width="500" height="600"
+                            id="imagePreview"> 
                         
-                            <img :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
+                            <img v-else :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
                             id="imagePreview">
                     </a>
                 </div>
@@ -137,6 +144,17 @@ import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from 'yup';
 //import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
+//
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+//import axios from 'axios';
+/* import specific icons */
+import {faLock } from '@fortawesome/free-solid-svg-icons'
+
+/* add icons to the library */
+library.add(faLock)
 
 
 
@@ -165,11 +183,13 @@ const submitForm = () => {
         onSuccess: () => {
     
     form.image = null
-    if(confirm('Subido:clear form?')){
+    if(true){
         form.name = ""
     form.original_url = ""
     }
+    document.getElementById('imagen').value =""
     form.danbooru_url = ""
+    form.hash_ignore = false
     document.getElementById('imagePreview').src = 'https://www.w3schools.com/tags/img_girl.jpg';
   },
     }
@@ -217,7 +237,7 @@ const mySchema = yup.object({
             }
 
             // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4'].includes(value.type)) {
+            if ( !['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4', 'video/webm' ].includes(value.type)) {
                 console.log(value)
                 return false;
                 
@@ -248,7 +268,7 @@ const handleImageChange = (event) => {
 };
 
 
-const changeColor = () => {
+const changeColor = () => {/*
 
     if (!form.pegi18) {
         document.getElementById('form').classList.add("bg-red-900")
@@ -257,7 +277,7 @@ const changeColor = () => {
     } else {
         document.getElementById('form').classList.remove("bg-red-900")
         document.getElementById('form').classList.add("bg-zinc-500")
-    }
+    }*/
 }
 
 
@@ -320,4 +340,9 @@ export default {
 
 </script>
 
+<style>
+.candado-private{
+    position: absolute;
+}
 
+</style>

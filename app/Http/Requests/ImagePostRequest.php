@@ -24,8 +24,8 @@ class ImagePostRequest extends FormRequest
     {
         return [
             'danbooru_url'=>'nullable|unique:image_posts,danbooru_url',
-            'image'=>['exclude_if:hash_ignore,1',new UniqHash],
-            //'image'=>[new UniqHash]
+            //'image'=>['exclude_if:hash_ignore,1',new UniqHash()],
+            'image'=>[new UniqHash]
 
 
         ];
