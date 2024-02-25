@@ -2,8 +2,8 @@
     <AppLayout :title='tag.name'>
 
         <template #header>
-            <h2 class="font-semibold text-3xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ tag.name }}
+            <h2 class="font-semibold text-3xl flex text-gray-800 dark:text-gray-200 leading-tight">
+                {{ tag.name }}   <sup>{{ tag.image_posts_count }}</sup>
             </h2>
             <p v-if="tag.name != tag.translate_esp"  class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight ">
                 {{ tag.translate_esp }}
@@ -13,6 +13,10 @@
                 class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
             Editar
             </Link>
+            <Link v-if="artist" :href="route('artist.show',artist.id)"
+                class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            ver
+            </Link>
         </template>
 
         <div class="py-12">
@@ -20,7 +24,8 @@
                 <div class="p-3 overflow-hidden shadow-xl sm:rounded-lg ">
                     <div >
                         <div  class="text-block text-gray-800 dark:text-gray-200">
-                        {{ tag.wiki }} 
+                        <!--{{ tag.wiki }} -->
+                        <div v-html="tag.wiki "></div>
                        
                     </div>
                         <div v-if="tag.category == 3 && artist" class="list-irl">

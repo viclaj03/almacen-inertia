@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\ImagePostRequest;
 use App\Models\ImagePost;
-use App\Models\Tag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +13,8 @@ use Inertia\Inertia;
 use Mockery\Undefined;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
-use Illuminate\Support\Facades\Http;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
-use Intervention\Image\Facades\Image;
 
 class ImagePostController extends Controller
 {
@@ -26,7 +24,7 @@ class ImagePostController extends Controller
 
     public function __construct()
     {
-         $this->middleware('auth')->except('index','show','search');
+         $this->middleware('auth')->except('index','show','search','searchByUrl');
     }
 
 
@@ -43,22 +41,16 @@ class ImagePostController extends Controller
                     $subQuery->where('private', 0)
                         ->orWhere('user_post', $user->id);
                         
-                })->
-                whereDoesntHave('tags', function ($q)  {
-                    $q->where('tag_id', 16);
                 });
 
                 if (!$user->pegi_18) {
                     $query->where('pegi_18', false);
                 }
-            })->orderBy('updated_at','desc')->paginate($num);
+            })->latest()->paginate($num);
         } else {
             $images = ImagePost::where('private', 0)
                 ->where('pegi_18', false)
-                ->whereDoesntHave('tags', function ($q)  {
-                    $q->where('tag_id', 16);
-                })
-                ->orderBy('updated_at','desc')
+                ->latest()
                 ->paginate($num);
         }
 
@@ -70,7 +62,7 @@ class ImagePostController extends Controller
 
        // dd($images);
 
-        return Inertia::render('images/ImagesList', compact('images', ));
+        return $images;
     }
 
     /**
@@ -78,7 +70,6 @@ class ImagePostController extends Controller
      */
     public function create()
     {
-        
         return Inertia::render('images/FormImage');
     }
 
@@ -91,7 +82,6 @@ class ImagePostController extends Controller
         $image = new ImagePost();
 
         $imagen = $request->image;
-        
         $extension = $imagen->getClientOriginalExtension();
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv','webm'];
 
@@ -110,8 +100,8 @@ class ImagePostController extends Controller
 
 
             $duration = $video->getFormat()->get('duration');
-            // Generar un número aleatorio dentro del rango de duración del video
-            $randomTime = rand(1, $duration);
+// Generar un número aleatorio dentro del rango de duración del video
+$randomTime = rand(1, $duration);
 
 
             // Captura un fotograma del video en el segundo 5 (ajusta según tus necesidades)
@@ -131,23 +121,22 @@ class ImagePostController extends Controller
 
 
         } 
-       
+        //dd(99);
         if (in_array($extension, $extensionesVideo)) {
         $imagenHash = hash_file('md5', $imagen->path());
         } else {
             try{
                 $hasher = new ImageHash(new DifferenceHash());
-                
+                //dd($imagen->path());
             $hash = $hasher->hash($imagen->path());
             $imagenHash = $hash->toHex();
             }catch(\Exception $e){
                 echo $e->getMessage();
             }
         }
-        
+        //dd($imagenHash);
         $nombreImagen = uniqid() . '.' . $extension;
 
-        $imagenHashMd5 = hash_file('md5', $imagen->path());
 
         $image->name = $request->name;
         $image->original_url = $request->original_url;
@@ -157,65 +146,19 @@ class ImagePostController extends Controller
         $image->private = $request->private;
         $image->imagen = $nombreImagen;
         $image->file_ext = $extension;
-        $image->md5_hash= $imagenHashMd5;
         $image->file_size = $imagen->getSize();
-        $image->description = $request->description;
 
 
 
         //$request->image->hashing_image;
         $image->imagen_hash = $imagenHash;
-
-
-        if(preg_match('/https:\/\/danbooru\.donmai\.us\/posts\/\d+/',$image->danbooru_url)){
-
-
-            $image->danbooru_url =  explode('?',$image->danbooru_url)[0];
-                
-
-            
-            $urlJson = $image->danbooru_url . '.json';
-
-            $response = Http::get($urlJson);
-            if ($response->successful()) {
-                
-                $datos = $response->json();
-
-                
-                $image->secondary_tags = $datos['tag_string'];
-
-
-
-                if(!$image->original_url){
-                    $image->original_url = $datos['source'];
-                }
-                
-                
-                
-            }
-        }
+        
 
         
         $image->save();
         Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
 
-        //crear version ligera
-        $lightVersionFilename = uniqid() . '_light.' . $extension;
-        $lightVersionPath = 'app/public/light_versions/' . $lightVersionFilename;
 
-        if (!in_array($extension, $extensionesVideo)) {
-
-
-            
-        Image::make($imagen->getRealPath())->resize(null, 360, function ($constraint) {
-            $constraint->aspectRatio();
-            //$constraint->upsize();
-        })->save(storage_path($lightVersionPath));
-
-        // Asignar la ubicación de la imagen ligera al modelo ImagePost
-        $image->light_version_imagen = $lightVersionFilename;
-        $image->save();
-        }
 
      if($request->tags){
              foreach($request->tags as $tag){
@@ -234,9 +177,6 @@ class ImagePostController extends Controller
      */
     public function show(ImagePost $image)
     {
-
-        
-        
         $user = Auth::user();
         if ($image->private) {
             if (!auth()->user() || Auth::user()->id != $image->user_post)
@@ -273,41 +213,6 @@ class ImagePostController extends Controller
                 $tag_meta[] = $tag;
             }
         }
-
-
-
-
-        $tags= explode(" ",$image->secondary_tags);
-
-        $tag_string_general = [];
-        $tag_string_character = [];
-        $tag_string_copyright = [];
-        $tag_string_artist = [];
-        $tag_string_meta = [];
-        $tag_string_unknow = []; 
-        foreach($tags as $tag){
-            $category = Tag::getCategoryForTag(str_replace('_',' ',$tag));
-            
-            
-
-            if ($category === null) {
-                $tag_string_unknow[] = $tag;
-            } elseif ($category === 0) {
-                $tag_string_general[] = $tag;
-            } elseif ($category === 1) {
-                $tag_string_copyright[] = $tag;
-            } elseif ($category === 2) {
-                $tag_string_character[] = $tag;
-            } elseif ($category === 3) {
-                $tag_string_artist[] = $tag;
-            } elseif ($category === 4) {
-                $tag_string_meta[] = $tag;
-            }
-
-        }
-      //  dd($tags,"general",$tag_string_general,"character",$tag_string_character,"copyr",$tag_string_copyright,"artist",$tag_string_artist,'meta',$tag_string_meta,$tag_string_unknow);
-
-
         return Inertia::render('images/ImagesShow', compact('image', 'tag_general', 'tag_copyright', 'tag_character', 'tag_artist', 'tag_meta'));
 
     }
@@ -352,34 +257,7 @@ class ImagePostController extends Controller
         $image->danbooru_url = $request->danbooru_url;
         $image->private = $request->private;
         $image->pegi_18 = $request->pegi18;
-        $image->description = $request->description;
-
-
-        if($request->getTags){
-            if(preg_match('/https:\/\/danbooru\.donmai\.us\/posts\/\d+/',$image->danbooru_url)){
-
-                $image->danbooru_url =  explode('?',$image->danbooru_url)[0];
-                $urlJson = $image->danbooru_url . '.json';
-    
-                $response = Http::get($urlJson);
-                if ($response->successful()) {
-                    $datos = $response->json();
-                    $image->secondary_tags = $datos['tag_string'];
-                    if(!$image->original_url){
-                        $image->original_url = $datos['source'];
-                    }
-                    
-                    
-                    
-                }
-            }
-        }
-        
-
-
-
         $image->save();
-       
 
 
         $image->tags()->detach();
@@ -421,7 +299,6 @@ class ImagePostController extends Controller
         $user = Auth::user();
 
         $num = $request->num ?? 15;
-        //dd($num);
 
         $tag_id = $request->tags;
         $tag_name = $request->tags_name;
@@ -495,12 +372,12 @@ class ImagePostController extends Controller
             }
         }
 
-        return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable','num'));
+        return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable'));
     }
 
     public function searchByUniqHash(Request $request){
 
-        $threshold = 10; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
+        $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
         $images =  ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) <= $threshold")->paginate(10);
         
@@ -510,9 +387,7 @@ class ImagePostController extends Controller
 
 
 
-    public function searchByUrl(Request $request){
-        $imagenesSearch = ImagePost::where('url',request('url'));
-    }
+   
 
 
     public function addFavorite(Request $request){
@@ -538,6 +413,14 @@ class ImagePostController extends Controller
 
         return Inertia::render('images/ImagesList', compact('images'));
         
+    }
+
+
+    public function searchByUrl(Request $request){
+        if (request('url') == null)
+            return ['result'=>'nop'];
+        $image = ImagePost::where('original_url',request('url'))->orWhere('danbooru_url',request('url'))->first();
+        return $image?? ['result'=>'nop'];
     }
 
     

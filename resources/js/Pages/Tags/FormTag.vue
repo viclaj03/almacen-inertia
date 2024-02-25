@@ -21,7 +21,7 @@
                             <label for="name"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
 
-                            <Field name="name" v-model="form.name" type="text"
+                            <Field name="name" v-model="form.name" type="text" @input="autoTranslate"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Titulo" />
                             <ErrorMessage name="name" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
@@ -116,6 +116,13 @@ const form = useForm({
     ulr_artist: tag ? url_list : "",
 });
 
+
+
+const autoTranslate = ()=> {
+    if(form.translate == ""){
+        form.translate = form.name
+    }
+}
 
 
 const submitForm = () => {

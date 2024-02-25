@@ -24,6 +24,11 @@
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
                 <Link :href="route('images.show', image.id)">Enlace </Link>
               </h1>
+              <div>
+                <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
+                <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
+                <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
+              </div>
               <br />
               
             </div>
@@ -46,6 +51,19 @@ import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { object } from 'yup';
+//font awesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+//import axios from 'axios';
+/* import specific icons */
+import { faLock, faHeart } from '@fortawesome/free-solid-svg-icons'
+
+import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
+
+/* add icons to the library */
+library.add(faLock, faHeart, faRegularHeart)
 
 
 

@@ -24,9 +24,14 @@
             <ul v-for="tag in tag_artist">
 
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
-                <Link :href="route('tags.show', tag)">?</Link>
+                <Link :href="route('tags.show', tag)">?  </Link>
                 <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }} </Link> {{
-                  tag.image_posts_count }} <span class="tooltiptext">
+                  tag.image_posts_count }}  
+                  <Link  :href="route('artist.addFavorite', tag.artist_id)" method="post">
+                  <font-awesome-icon v-if="tag.isFavorite" icon="heart" style="color: #c5dc18;" /> 
+                  <font-awesome-icon v-else icon="heart" style="color: #000000;" /> 
+                  </Link>
+                  <span class="tooltiptext">
 
                   <h6>{{ tag.name }} {{tag.name != tag.translate_esp ? (' <-> ' + tag.translate_esp): ''   }} </h6>
                   <div class="bg-white text-black">
@@ -96,7 +101,8 @@
             </ul>
           </div>
           <div class="mx-auto image-show">
-            <video loop="loop" v-if="image.light_version_imagen" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls >
+            
+            <video loop="loop" v-if="image.light_version_imagen && image.file_ext =='mp4'" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls >
               <source :src="'/storage/imagesPost/' + image.imagen" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -107,6 +113,13 @@
                 <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
                 <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
               </div>
+              <div class="border bg-rose-600 text-white">
+          {{image.description }}
+        </div>
+        
+        
+
+
 
             <div><button @click="destroy(image)"
                 class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
@@ -115,21 +128,33 @@
           </div>
         </div>
 
+        
+
         <div class="break-words">
           <h2>Information</h2>
           <p class="text-gray-800 dark:text-gray-200">ID: <span>{{ image.id }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">Subido: <span>{{ image.created_at }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">actulizado: <span>{{ image.updated_at }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">Peso: <span>{{ image.file_size }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">Hash: <span>{{ image.imagen_hash }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">md5:<span>{{ image.md5_hash }}</span></p>
           <p v-if="image.original_url" class="text-gray-800 dark:text-gray-200">Original url: <a target="_blank"
               :href="image.original_url"><span class="text-blue-600">{{ image.original_url }}</span></a> </p>
           <p v-if="image.danbooru_url" class="text-gray-800 dark:text-gray-200">Danbooru: <a target="_blank" :href="image.danbooru_url"> <span
                 class="text-blue-600">{{ image.danbooru_url }}</span></a></p>
           <p class="text-gray-800 dark:text-gray-200" v-if="image.private">Imagen privada</p>
         </div>
-
+ 
         <div class="extra_information">
+          <div v-if="image.secondary_tags" class="border-2 text-purple-500">
+          
+          <button class="collapsible">secondary tag (provisional)</button>
+<div class="content-nop">
+  <p  style="white-space: pre-line;">{{image.secondary_tags }}.</p>
+</div>
 
+
+        </div>
         </div>
 
       </div>
@@ -140,7 +165,6 @@
     
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Pagination from '@/Components/Pagination.vue';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
@@ -252,9 +276,66 @@ async function destroy(image) {
   position: absolute;
   z-index: 1;
 }
-
+/*collapse*/
 .tooltip:hover .tooltiptext {
   visibility: visible;
-}</style>
+}
+
+
+.collapsible {
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: #555;
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: #f1f1f1;
+}
+
+</style>
+
+
+<script> 
+var coll = document.getElementsByClassName("collapsible");
+var i; 
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null; 
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    } 
+  });
+}
+</script>
 
 

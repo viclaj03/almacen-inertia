@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\UniqHash;
+use App\Rules\UniqDanbooruUrl;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ImagePostRequest extends FormRequest
@@ -23,10 +24,9 @@ class ImagePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'danbooru_url'=>'nullable|unique:image_posts,danbooru_url',
+            'danbooru_url'=>[new UniqDanbooruUrl],
             //'image'=>['exclude_if:hash_ignore,1',new UniqHash()],
             'image'=>[new UniqHash]
-
 
         ];
     }

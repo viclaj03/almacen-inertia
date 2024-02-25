@@ -39,7 +39,7 @@ class VideoPostController extends Controller
 
     public function index()
     {
-        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(45);
+        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(300 );
 
         return Inertia::render('VideoPost/VideoList', compact('videos', ));
 

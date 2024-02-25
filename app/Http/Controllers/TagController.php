@@ -47,7 +47,8 @@ class TagController extends Controller
         $tags = Tag::withCount('imagePosts')
         ->where(function ($query) use ($name) {
             $query->where('name', 'like', '%' . $name . '%')
-                ->orWhere('translate_esp', 'like', '%' . $name . '%');
+                ->orWhere('translate_esp', 'like', '%' . $name . '%')
+                ->orWhere('wiki', 'like', '%' . $name . '%');
         });
         
         if($request->type  >-1){
@@ -56,7 +57,7 @@ class TagController extends Controller
 
         $filters = RequestFilter::all(['search', 'type']);
         
-        $tags = $tags->orderBy($orderBy, 'asc') ->paginate($num)->withQueryString();   
+        $tags = $tags->orderBy($orderBy, 'desc') ->paginate($num)->withQueryString();   
         return Inertia::render('Tags/TagList' , compact('tags','filters'));
     }
 
@@ -109,7 +110,7 @@ class TagController extends Controller
      */
     public function show(Tag $tag)
     {
-
+        
         $images = ImagePost::wherehas('tags', function ($q) use ($tag) {
             $q->where('tag_id',$tag->id);
         });//->inRandomOrder()->limit(10)->get();
@@ -117,7 +118,7 @@ class TagController extends Controller
         if (!Auth::user() || (Auth::user() && !Auth::user()->pegi_18)) {
             $images->where('pegi_18', '!=', true);
         }
-
+        
         $images = $images->inRandomOrder()->limit(10)->get();
 
         $artist= null;
@@ -128,7 +129,10 @@ class TagController extends Controller
             $urls = $artist->urls;
         }
 
-       // $artist_url = //
+        $tag = $tag->loadCount('imagePosts');
+        
+
+       
 
         
         return Inertia::render('Tags/TagShow', compact('tag','images','artist','urls'));

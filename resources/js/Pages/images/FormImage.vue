@@ -49,10 +49,12 @@
 
                         </div>
 
+                        
+
                         <div class="mb-4 p-5">
                             <input type="checkbox" v-model="form.pegi18"
                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                @input="changeColor">
+                                >
                             <label for="disabled-checkbox" class="pr-10 ml-2 text-sm font-medium text-white">NSFW</label>
                             
                             <input type="checkbox" v-model="form.private"
@@ -88,7 +90,19 @@
                             <label for="disabled-checkbox" class=" ml-2 text-sm font-medium text-white">Ignorar hash </label>
                         </div>
 
+                        
+
                             <div v-if="form.image">Peso {{ form.image.size }}, Formato : {{ form.image.type }}</div> 
+                        </div>
+                        <div class="mb-4 " style="display: none ;">
+                            <label for="description_image"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                            <Field name="description_image" v-model="form.description" as="textarea" id="description_image"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="descripción" />
+                                <div v-if="form.errors.description" class="text-green-500 text-xs italic uppercase" v-html="form.errors.description"></div>
+                            <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
+
                         </div>
 
 
@@ -125,7 +139,30 @@
                             <img v-else :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
                             id="imagePreview">
                     </a>
+                    <button @click="removeURLParameters" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">limpiar url</button>
+                    <div class="mb-4 ">
+                            <label for="description_image"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                            <Field name="description_image" v-model="form.description" as="textarea" id="description_image"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="descripción" />
+                                <div v-if="form.errors.description" class="text-green-500 text-xs italic uppercase" v-html="form.errors.description"></div>
+                            <ErrorMessage name="danbooru_url" class="text-green-500 text-xs italic uppercase" />
+
+                        </div>
+
+                        <div v-if="image">
+                            <input type="checkbox" v-model="form.getTags"
+                                class=" w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                >
+                            <label for="disabled-checkbox" class=" ml-2 text-sm font-medium text-white">volver a coger datos</label>
+                            <div class="border-solid border-r-slate-600 bg-white">
+                                <p>{{ image.secondary_tags }}</p>
+                            </div>
+                        </div>
+
                 </div>
+                
 
             </div>
         </div>
@@ -169,7 +206,9 @@ const form = useForm({
     pegi18: image ? !!image.pegi_18 : false,
     private: image ? !!image.private : false,
     tags: tag_list? tag_list : [],
-    hash_ignore: false
+    hash_ignore: false,
+    description: image ? image.description : "",
+    getTags: false
 })
 
 
@@ -190,6 +229,7 @@ const submitForm = () => {
     document.getElementById('imagen').value =""
     form.danbooru_url = ""
     form.hash_ignore = false
+    form.description = ""
     document.getElementById('imagePreview').src = 'https://www.w3schools.com/tags/img_girl.jpg';
   },
     }
@@ -204,20 +244,57 @@ const submitForm = () => {
 };
 
 
+const removeURLParameters = (event)=> {
+    
+    // Obtén la URL actual
+    const currentURL = form.danbooru_url;
+
+    // Divide la URL en base a "?"
+    const parts = currentURL.split("?");
+    
+    // Si hay al menos dos partes (la URL base y los parámetros de búsqueda), toma la primera parte
+    if (parts.length > 1) {
+      form.danbooru_url = parts[0];
+    }
+  }
+
+
 
 
 
 
 const mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido capullo'),
+    name: yup.string().required('El nombre es requerido '),
     original_url: yup.string().nullable().url('pon una url'),
     danbooru_url: yup
         .string().nullable()
         .url('Pon una URL válida')
-        .test('is-danbooru-url', 'El enlace debe ser de danbooru', function (value) {
-            if (value && value.length > 0  ) {
-                
+        .test('is-danbooru-url', 'El enlace debe ser de danbooru', /*async*/  function (value) {
+            if (value && value.length > 0 && !form.hash_ignore  ) {
                 //return /danbooru\.donmai\.us/.test(value);
+                /*try {
+          // Realizar la solicitud a tu API
+          
+          const response = await axios.get(`/api/searchby?url=${value}`, {
+            params: {
+              url: value,
+            },  
+          })
+          
+          // Actuar según la respuesta de la API
+          if (response.data.name ) {
+            
+            return this.createError({ message: `enlace repetido \n localhost/images/${response.data.id}` });
+            
+          } else {
+            return true
+          }
+        } catch (error) {
+          console.error('Error al hacer la solicitud a la API:', error);
+          return this.createError({ message: 'Error al validar el enlace con la API' });
+        }
+               */ 
+                
             }
             return true;
         }),
@@ -268,17 +345,7 @@ const handleImageChange = (event) => {
 };
 
 
-const changeColor = () => {/*
 
-    if (!form.pegi18) {
-        document.getElementById('form').classList.add("bg-red-900")
-        document.getElementById('form').classList.remove("bg-zinc-500")
-
-    } else {
-        document.getElementById('form').classList.remove("bg-red-900")
-        document.getElementById('form').classList.add("bg-zinc-500")
-    }*/
-}
 
 
 

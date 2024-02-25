@@ -22,6 +22,13 @@
         <div class="p-3 shadow-xl sm:rounded-lg ">
 
           <form @submit.prevent="serchImage">
+            <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label>
+<select id="countries" name="num" v-model="form.num" style="max-width: 15vh;" class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+  <option value="15">15</option>
+  <option value="25">25</option>
+  <option value="40">40</option>
+  <option value="9999">ALL</option>
+</select>
             <label for="default-search"
               class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
             <div class="relative search-space">
@@ -42,7 +49,7 @@
           </form>
           <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images.data" :key="image.id" class="relative ">
-              <a :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+              <a :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery" loop>
                 <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e; " class="absolute right-0" />
                 <div v-if="image.pegi_18" class="nsfw-style absolute">NSFW</div>
                 <img v-if="image.light_version_imagen" class=""
@@ -52,6 +59,7 @@
               <div class="bg-white uppercase text-center image-name-list">
                 {{ image.name }}
               </div>
+              
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
                 <Link :href="route('images.show', image.id)">Enlace </Link>
               </h1>
@@ -97,12 +105,13 @@ import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
 library.add(faLock, faHeart, faRegularHeart)
 
 
-const { images, tags, tags_disable } = defineProps(['images', 'tags', 'tags_disable']);
+const { images, tags, tags_disable,num } = defineProps(['images', 'tags', 'tags_disable','num']);
 
 // Usar las propiedades para inicializar form.tags
 const form = useForm({
   tags: tags ? tags : [],
-  tags_disable: tags_disable ? tags_disable : []   // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
+  tags_disable: tags_disable ? tags_disable : [],
+  num: num? num:15  // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
 });
 
 const serchImage = () => {
@@ -112,7 +121,7 @@ const serchImage = () => {
   const selectedTagsDisable = form.tags_disable.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
   const selectedTagsNameDisable = form.tags_disable.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
 
-  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable });
+  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable,num:form.num });
 
 };
 
@@ -135,9 +144,13 @@ const serchImage = () => {
 
 onMounted(() => {
   Fancybox.bind('[data-fancybox]', {
+   
   });
+ 
 
 });
+
+
 
 </script>
 
@@ -166,14 +179,11 @@ export default {
     };
   },
   methods: {
-    // Método para buscar usuarios de GitHub
+    
     onSearch(search) {
-      // Realizar una solicitud a la API de GitHub para buscar usuarios
       axios.get(`/api/tags?name=${search}`)
         .then((response) => {
-          // Obtener los resultados de búsqueda de usuarios
           const tags = response.data;
-          // Almacenar los resultados de búsqueda en searchResults
           this.searchResults = tags.map((tag) => ({ value: tag.id, label: (tag.name == tag.translate_esp ? tag.name : (tag.name + '<->' + tag.translate_esp)) }));
 
         })

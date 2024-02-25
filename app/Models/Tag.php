@@ -29,4 +29,15 @@ class Tag extends Model
         return $this->withCount('imagePosts');
     }
 
+    public static function getCategoryForTag($tagName)
+    {
+        $tag = self::where('name', $tagName)->first();
+
+        
+
+        return $tag ? $tag->category : null;
+    }
+
+    
+
 }

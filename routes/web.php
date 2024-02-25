@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\ImagePostController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoPostController;
+
 use App\Models\ImagePost;
 use App\Models\User;
 use Illuminate\Foundation\Application;
@@ -64,6 +66,14 @@ Route::middleware([
         $imagesFaltan = ImagePost::wherehas('tags', function($q){
             $q->where('tag_id',9);
         })->count();
+
+        if ($user) {
+            foreach ($images as $image) {
+                $image->isFavorited = $user->favoriteImages->contains($image->id);
+            }
+        }
+
+        
         
         return Inertia::render('Dashboard',compact('images','numImages','numImages18','imagesFaltan'));
     })->name('dashboard');//->middleware(['verified']) ;
@@ -111,6 +121,9 @@ Route::resource('/videos',VideoPostController::class)->middleware('auth');
 
 
 Route::resource('/tags',TagController::class)->middleware('auth');
+Route::resource('/artist',ArtistController::class)->middleware('auth');
+
+Route::post('/add-artist-favorite/{id}',[ArtistController::class,'addFavorite'])->name('artist.addFavorite');
 
 
 

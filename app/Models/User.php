@@ -66,5 +66,23 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
+    public function favoriteArtists()
+    {
+        return $this->belongsToMany(Artist::class, 'favorites_artist', 'user_id', 'artist_id');
+    }
+
+    public function favoriteArtist(){
+        return $this->belongsToMany(Artist::class, artist::class,'','');
+    }
+
+
+    public function getCommentForArtist($artistId)
+    {
+        return $this->favoriteArtists()
+            ->where('artist_id', $artistId)
+            ->select('comment', 'last_change_date')->first();
+    }
+
+
     
 }

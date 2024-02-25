@@ -5,11 +5,17 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Lista de Tags
             </h2>
-            <br />
+            <br>
+            <div class="joquese">
             <Link :href="route('tags.create')"
-                class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+                class="mr-10 mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
             Nueva
             </Link>
+            <Link :href="route('artist.index')"
+                class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            Artistas
+            </Link>
+          </div>
         </template>
 
 

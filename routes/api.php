@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\ImagePostController;
 use App\Http\Controllers\Api\TagController;
+use App\Models\ImagePost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,5 +25,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::apiResource('tags',TagController::class);
+
+Route::apiResource('images',ImagePostController::class);
+
+Route::get('searchby',[ImagePostController::class,'searchByUrl'])->name('Searchbyurl');
 
 

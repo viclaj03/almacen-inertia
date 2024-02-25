@@ -17,6 +17,10 @@ class UniqHash implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if (!$value){
+            $fail('imagen requerida');
+            return;
+        }
 
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
 
@@ -24,9 +28,8 @@ class UniqHash implements ValidationRule
             return;
         }
 
-        
-
-        $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
+    
+        $threshold = 10; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
         $hasher = new ImageHash(new DifferenceHash());
         $imagenHash =  $hasher->hash($value->path());

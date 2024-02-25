@@ -49,7 +49,7 @@
                                 <ErrorMessage name="video" class="text-green-500 text-xs italic uppercase" />
                         </div>
 
-                        <div v-if="form.video">Peso {{ form.video.type }} {{ form.video.size }}</div>
+                        <div v-if="form.video">Peso {{ form.video.type }} - {{ form.video.size }}</div>
 
                         <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700" v-if="form">
                             <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" v-if="form.progress"
@@ -105,7 +105,11 @@ const submitForm = () => {
     //form.validate().then(() => {
     //if (!form.errors.any()) {
     // Lógica de envío del formulario
-    form.post('/videos');
+    form.post('/videos',{
+        onSuccess() {
+            
+        }
+    });
     //}
     // });
 };
@@ -121,7 +125,7 @@ const  mySchema = yup.object({
        // alert(9)
        // const allowedFormats = ['image/png', 'image/jpeg'];
        // return allowedFormats.includes(file.type);
-       return false;
+       //return false;
       }
    
 
