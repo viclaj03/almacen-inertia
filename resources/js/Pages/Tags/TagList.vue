@@ -63,7 +63,7 @@
                                 <td v-if="tag.category == 2" class="border p-3" :class="categoryClass(tag.category)">Character </td>
                                 <td v-if="tag.category == 3" class="border p-3" :class="categoryClass(tag.category)">Artist </td>
                                 <td v-if="tag.category == 4" class="border p-3" :class="categoryClass(tag.category)">Meta </td>
-                                <td class="border p-3" :class="categoryClass(tag.category)"> {{tag.image_posts_count }}</td>
+                                <td class="border p-3" :class="categoryClass(tag.category)"> {{tag.post_count }}</td>
                             </tr>
                         </tbody>
                     </table>

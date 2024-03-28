@@ -3,7 +3,7 @@
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        {{ image.name }} <sup v-if="image.pegi_18" class="nsfw-style">NSFW</sup> <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e;" /> 
+      fsf  {{ image.name }} <sup v-if="image.pegi_18" class="nsfw-style">NSFW</sup> <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e;" /> 
       </h2>
       <br />
       <Link :href="route('images.edit', image)"
@@ -99,6 +99,61 @@
                 </span>
               </li>
             </ul>
+            <div v-if="image.secondary_tags">
+             
+
+            
+<div class="text-white">---Secondary--</div>
+            <h3 class="text-gray-800 dark:text-gray-200">Artist</h3>
+            
+            <ul v-for="tag in tag_string_artist">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name }}</Link> {{
+                  tag.post_count }} 
+              </li>
+            </ul>
+
+            <h3 class="text-gray-800 dark:text-gray-200">Copyrights</h3>
+            <ul v-for="tag in tag_string_copyright">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name  }}</Link> {{
+                  tag.post_count }} 
+              </li>
+            </ul>
+
+            <h3 class="text-gray-800 dark:text-gray-200">Characters</h3>
+            <ul v-for="tag in tag_string_character">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name  }}</Link> {{
+                  tag.post_count }} 
+              </li>
+            </ul>
+
+
+            <h3 class="text-gray-800 dark:text-gray-200">General</h3>
+            <ul v-for="tag in tag_string_general">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name  }}</Link> {{
+                  tag.post_count }} 
+              </li>
+            </ul>
+
+            <h3 class="text-gray-800 dark:text-gray-200">Desconocidos</h3>
+            <ul v-for="tag in tag_string_unknow">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag })"> {{ tag }}</Link> 
+              </li>
+            </ul>
+          </div>
+          <div v-else>
+            <p class="text-white">Sin etiquetas</p>
+          </div>
+
           </div>
           <div class="mx-auto image-show">
             
@@ -106,7 +161,7 @@
               <source :src="'/storage/imagesPost/' + image.imagen" type="video/mp4">
               Your browser does not support the video tag.
             </video>
-            <img v-else class="object-fill image-size" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
+            <img v-else class="h-auto max-w-full" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">
             <div class="bg-gray-600 row-auto">{{ image.name }} </div>
             <div>
                 <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
@@ -145,18 +200,7 @@
           <p class="text-gray-800 dark:text-gray-200" v-if="image.private">Imagen privada</p>
         </div>
  
-        <div class="extra_information">
-          <div v-if="image.secondary_tags" class="border-2 text-purple-500">
-          
-          <button class="collapsible">secondary tag (provisional)</button>
-<div class="content-nop">
-  <p  style="white-space: pre-line;">{{image.secondary_tags }}.</p>
-</div>
-
-
-        </div>
-        </div>
-
+        
       </div>
     </div>
   </AppLayout>
@@ -187,7 +231,8 @@ library.add(faLock, faHeart, faRegularHeart)
 
 
 
-defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, })
+defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, 
+  tag_string_unknow:Array,tag_string_general:Array,tag_string_copyright:Array,tag_string_character:Array,tag_string_artist:Array,tag_string_meta:Array })
 
 
 async function destroy(image) {

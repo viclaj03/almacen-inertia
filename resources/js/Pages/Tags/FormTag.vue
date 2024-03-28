@@ -143,7 +143,7 @@ const mySchema = yup.object({
     name: yup.string().required('El nombre es requerido'),
     translate: yup.string().required('tradución requerida'),
     wiki: yup
-        .string().nullable().min(3, 'Minimo 3').max(2500,'maximo 2500'),
+        .string().max(2500,'maximo 2500').nullable(true),
     type: yup.number().required().min(0, "Seelciona una etiqueta").max(5)
 })
 </script>

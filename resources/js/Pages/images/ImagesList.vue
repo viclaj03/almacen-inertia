@@ -34,6 +34,7 @@
             <div class="relative search-space">
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 
+                
               </div>
               <v-select :filterable="false" multiple v-model="form.tags" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas buscar"
@@ -42,10 +43,17 @@
               <v-select :filterable="false" multiple v-model="form.tags_disable" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas desabilitar"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></v-select>
-
+                
               <button type="submit"
                 class="text-white   bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
-            </div>
+            
+              </div>
+
+
+
+              <AutocompleteSearch :use-input="true" v-model="form.tags_strings"/>
+            
+              
           </form>
           <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images.data" :key="image.id" class="relative ">
@@ -57,9 +65,8 @@
                 <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name" :title="image.name">
               </a>
               <div class="bg-white uppercase text-center image-name-list">
-                {{ image.name }}
+                {{ image.danbooru_url }}
               </div>
-              
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
                 <Link :href="route('images.show', image.id)">Enlace </Link>
               </h1>
@@ -83,6 +90,9 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
+
+import AutocompleteSearch from '@/Components/AutocompleteSearch.vue';
+
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
@@ -105,23 +115,25 @@ import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
 library.add(faLock, faHeart, faRegularHeart)
 
 
-const { images, tags, tags_disable,num } = defineProps(['images', 'tags', 'tags_disable','num']);
+const { images, tags, tags_disable,num,tags_strings } = defineProps(['images', 'tags', 'tags_disable','num','tags_strings']);
 
 // Usar las propiedades para inicializar form.tags
 const form = useForm({
   tags: tags ? tags : [],
   tags_disable: tags_disable ? tags_disable : [],
-  num: num? num:15  // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
+  num: num? num:15,  // Aquí utilizamos la propiedad tags de defineProps para inicializar form.tags
+  tags_strings: tags_strings ? tags_strings : ''
 });
 
 const serchImage = () => {
+
   const selectedTags = form.tags.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
   const selectedTagsName = form.tags.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
 
   const selectedTagsDisable = form.tags_disable.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
   const selectedTagsNameDisable = form.tags_disable.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
 
-  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable,num:form.num });
+  router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable,num:form.num,tags_strings:form.tags_strings });
 
 };
 
@@ -160,6 +172,7 @@ onMounted(() => {
 import vSelect from 'vue-select';
 import axios from 'axios';
 import 'vue-select/dist/vue-select.css';
+
 
 
 // ...

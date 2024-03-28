@@ -20,12 +20,25 @@ class UniqDanbooruUrl implements ValidationRule
             return;
         }
 
+       
+
+        if(preg_match('/https:\/\/danbooru\.donmai\.us\/posts\/\d+/',$value)){
+
+
+            $value =  explode('?',$value)[0];
+        }
+
+       
+
         $image = ImagePost::where('danbooru_url','=',$value)->first();
+
+
+
         
         if($image){
             $fail('ya existe este enlace puedes verlo  <a target="_blank" class="text-white" href="' . route('images.show', $image) . '">aquí</a>. ' ) ;
         }
         
-
+        
     }
 }

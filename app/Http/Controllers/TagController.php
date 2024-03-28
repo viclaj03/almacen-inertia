@@ -47,11 +47,11 @@ class TagController extends Controller
         $tags = Tag::withCount('imagePosts')
         ->where(function ($query) use ($name) {
             $query->where('name', 'like', '%' . $name . '%')
-                ->orWhere('translate_esp', 'like', '%' . $name . '%')
-                ->orWhere('wiki', 'like', '%' . $name . '%');
+                ->orWhere('translate_esp', 'like', '%' . $name . '%');
+                //->orWhere('wiki', 'like', '%' . $name . '%');
         });
         
-        if($request->type  >-1){
+        if($request->type  > -1){
           $tags =   $tags->where('category',$request->type);
         }
 
@@ -77,11 +77,8 @@ class TagController extends Controller
         $tag = new Tag();
         $tag->name = $request->name;
         $tag->translate_esp = $request->translate;
-        $tag->wiki = $request->wiki;
+        $tag->wiki = $request->wiki ?? '';
         $tag->category = $request->type;
-
-        
-
         $tag->save();
 
         if ($tag->category == 3) {
@@ -131,12 +128,7 @@ class TagController extends Controller
 
         $tag = $tag->loadCount('imagePosts');
         
-
-       
-
-        
         return Inertia::render('Tags/TagShow', compact('tag','images','artist','urls'));
-
     }
 
     /**
@@ -163,6 +155,10 @@ class TagController extends Controller
      */
     public function update(UpdateTagRequest $request, Tag $tag)
     {
+
+        if($tag->category == 3 && $request->type != 3){
+            dd('no se puede cambiar un artista de categoria  momento');
+        }
 
         $tag->name = $request->name;
         $tag->translate_esp = $request->translate;

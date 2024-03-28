@@ -20,15 +20,21 @@ class ArtistController extends Controller
     {
         $user = Auth::user();
         $name = request()->search ?? '';
-        $favoritos = request()->favoritos== 'false'?false:true;
+        
+        $favoritos = request()->favoritos ;
 
-        //dd(gettype($favoritos));
+
+        
+       
 
         
         $artists = Artist::with('tag')->where('name','like','%' . $name . '%');
 
 
-        if ($favoritos == true ) {
+        //dd(request()->favoritos);
+        if ($favoritos == 'true' ) {
+            //dd(request()->favoritos);
+            //dd(99);
             //dd(gettype($favoritos));
             $artists = $artists->whereHas('favoritedBy',function ($q)  {
                 $q->where('user_id', Auth::id());
@@ -36,7 +42,7 @@ class ArtistController extends Controller
         }
         
         
-        $artists = $artists->paginate(10)->withQueryString();
+        $artists = $artists->paginate(13)->withQueryString();
        
        foreach ($artists as $artist) {
         $artist->isFavorite = $user->favoriteArtists->contains($artist->id);

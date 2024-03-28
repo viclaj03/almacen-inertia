@@ -13,6 +13,7 @@ use Inertia\Inertia;
 use Mockery\Undefined;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
@@ -32,6 +33,8 @@ class ImagePostController extends Controller
 
     public function index(Request $request)
     {
+
+        
 
         $num = $request->num ?? 10;
 
@@ -160,6 +163,7 @@ class ImagePostController extends Controller
         $image->md5_hash= $imagenHashMd5;
         $image->file_size = $imagen->getSize();
         $image->description = $request->description;
+        
 
 
 
@@ -171,32 +175,48 @@ class ImagePostController extends Controller
 
 
             $image->danbooru_url =  explode('?',$image->danbooru_url)[0];
-                
 
+            
             
             $urlJson = $image->danbooru_url . '.json';
 
+
             $response = Http::get($urlJson);
             if ($response->successful()) {
-                
                 $datos = $response->json();
 
+                Tag::newTagGeneral( $datos['tag_string_general']);
+                Tag::newTagCharacters($datos['tag_string_character']);
+                Tag::newTagCopyright($datos['tag_string_copyright']);
                 
+
                 $image->secondary_tags = $datos['tag_string'];
 
 
 
+                $image->tag_count = $datos['tag_count'];
+                $image->tag_count_general = $datos['tag_count_general'];
+                $image->tag_count_artist = $datos['tag_count_artist'];
+                $image->tag_count_character = $datos['tag_count_character'];
+
+                
+
                 if(!$image->original_url){
                     $image->original_url = $datos['source'];
                 }
-                
-                
+
+                Tag::orderAndCountTags($image->secondary_tags);
                 
             }
+        } elseif($request->tags_strings) {
+            $image->secondary_tags = Tag::orderAndCountTags($request->tags_strings);
         }
 
         
+
+        
         $image->save();
+        
         Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
 
         //crear version ligera
@@ -266,8 +286,11 @@ class ImagePostController extends Controller
             } elseif ($tag->category == 2) {
                 $tag_character[] = $tag;
             } elseif ($tag->category == 3) {
-                $tag->isFavorite = $user?$user->favoriteArtists->contains($tag->artist->id):false;
+                
+                $tag->isFavorite =  $user?$user->favoriteArtists->contains($tag->artist->id):false;
+                
                 $tag->artist_id = $tag->artist->id;
+                
                 $tag_artist[] = $tag;
             } elseif ($tag->category == 4) {
                 $tag_meta[] = $tag;
@@ -286,29 +309,32 @@ class ImagePostController extends Controller
         $tag_string_meta = [];
         $tag_string_unknow = []; 
         foreach($tags as $tag){
-            $category = Tag::getCategoryForTag(str_replace('_',' ',$tag));
-            
+            $tagSearch = Tag::where('name',str_replace('_', ' ', $tag) )->first();
             
 
-            if ($category === null) {
+            if ($tagSearch === null) {
                 $tag_string_unknow[] = $tag;
-            } elseif ($category === 0) {
-                $tag_string_general[] = $tag;
-            } elseif ($category === 1) {
-                $tag_string_copyright[] = $tag;
-            } elseif ($category === 2) {
-                $tag_string_character[] = $tag;
-            } elseif ($category === 3) {
-                $tag_string_artist[] = $tag;
-            } elseif ($category === 4) {
-                $tag_string_meta[] = $tag;
+                
+            } elseif ($tagSearch->category === 0) {
+                $tag_string_general[] = $tagSearch;
+            } elseif ($tagSearch->category === 1) {
+                $tag_string_copyright[] = $tagSearch;
+            } elseif ($tagSearch->category === 2) {
+                $tag_string_character[] = $tagSearch;
+            } elseif ($tagSearch->category === 3) {
+                $tag_string_artist[] = $tagSearch;
+            } elseif ($tagSearch->category === 4) {
+                $tag_string_meta[] = $tagSearch;
             }
 
         }
+        
+        
       //  dd($tags,"general",$tag_string_general,"character",$tag_string_character,"copyr",$tag_string_copyright,"artist",$tag_string_artist,'meta',$tag_string_meta,$tag_string_unknow);
 
 
-        return Inertia::render('images/ImagesShow', compact('image', 'tag_general', 'tag_copyright', 'tag_character', 'tag_artist', 'tag_meta'));
+        return Inertia::render('images/ImagesShow', compact('image', 'tag_general', 'tag_copyright','tag_character', 'tag_artist', 'tag_meta',
+        'tag_string_unknow','tag_string_general','tag_string_copyright','tag_string_character','tag_string_artist','tag_string_meta'));
 
     }
 
@@ -373,7 +399,11 @@ class ImagePostController extends Controller
                     
                 }
             }
+        } elseif($request->tags_strings) {
+            $image->secondary_tags = $request->tags_strings;
         }
+        
+
         
 
 
@@ -428,6 +458,10 @@ class ImagePostController extends Controller
 
         $tags_disable_id = $request->tags_disable;
         $tags_disable_name = $request->tags_name_disable;
+
+
+
+
 
 
         $imagenesSearch = ImagePost::with('tags')->where(function ($query) use ($user) {
@@ -486,6 +520,38 @@ class ImagePostController extends Controller
             $imagenesSearch->where('pegi_18', '!=', true);
         }
 
+
+        $tags_strings = $request->tags_strings;
+        $tags2 = explode(' ', $request->tags_strings);
+
+        
+    
+        /*if($tags_strings)
+            $imagenesSearch->Where(function($query) use ($tags2) {
+                foreach($tags2 as $tag) {
+                $query->orWhere('secondary_tags', 'like',"% $tag %")
+                ->orWhere('secondary_tags', 'like',"$tag %")
+                ->orWhere('secondary_tags', 'like',"% $tag");
+                }
+            });*/
+
+            if($tags_strings)
+            foreach ($tags2 as $tag) {
+                $imagenesSearch->whereExists(function ($query) use ($tag) {
+                    $query->selectRaw(1)
+                          
+                          ->whereRaw('LOWER(secondary_tags) LIKE ?', ['% ' . $tag . ' %'])
+                          ->orWhereRaw('LOWER(secondary_tags) LIKE ?', ['% ' . $tag])
+                          ->orWhereRaw('LOWER(secondary_tags) LIKE ?', [$tag . ' %']);
+                });
+            }
+
+            
+            
+                
+            
+            
+        
         $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
 
@@ -495,7 +561,8 @@ class ImagePostController extends Controller
             }
         }
 
-        return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable','num'));
+
+        return Inertia::render('images/ImagesList', compact('images', 'tags','tags_disable','num','tags_strings'));
     }
 
     public function searchByUniqHash(Request $request){
@@ -503,6 +570,13 @@ class ImagePostController extends Controller
         $threshold = 10; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
         $images =  ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) <= $threshold")->paginate(10);
+        
+        if (Auth::user()) {
+            foreach ($images as $image) {
+                $image->isFavorited = Auth::user()->favoriteImages->contains($image->id);
+            }
+        }
+        
         
         return Inertia::render('images/ImagesList', compact('images'));
 

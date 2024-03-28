@@ -66,9 +66,12 @@
                         <div>
                             <v-select class=" " multiple v-model="form.tags" @search="onSearch" label="label" :options="searchResults"
                                 placeholder="Etiquetas">
-                            
-                            
                             </v-select>
+
+                        </div>
+
+                        <div>
+                            <AutocompleteSearch :useInput="false" v-model="form.tags_strings"/>
 
                         </div>
 
@@ -208,7 +211,8 @@ const form = useForm({
     tags: tag_list? tag_list : [],
     hash_ignore: false,
     description: image ? image.description : "",
-    getTags: false
+    getTags: false,
+    tags_strings: image ? image.secondary_tags : ''
 })
 
 
@@ -368,6 +372,7 @@ onMounted(() => {
 <script>
 import vSelect from 'vue-select';
 import axios from 'axios';
+import AutocompleteSearch from '@/Components/AutocompleteSearch.vue';
 
 // ...
 
