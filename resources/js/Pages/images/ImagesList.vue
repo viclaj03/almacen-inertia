@@ -14,27 +14,26 @@
 
     </template>
 
-
-
-
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="p-3 shadow-xl sm:rounded-lg ">
 
           <form @submit.prevent="serchImage">
-            <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label>
-<select id="countries" name="num" v-model="form.num" style="max-width: 15vh;" class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="15">15</option>
-  <option value="25">25</option>
-  <option value="40">40</option>
-  <option value="9999">ALL</option>
-</select>
+            <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an
+              option</label>
+            <select id="countries" name="num" v-model="form.num" style="max-width: 15vh;"
+              class=" bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="40">40</option>
+              <option value="9999">ALL</option>
+            </select>
             <label for="default-search"
               class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
             <div class="relative search-space">
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 
-                
+
               </div>
               <v-select :filterable="false" multiple v-model="form.tags" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas buscar"
@@ -43,35 +42,30 @@
               <v-select :filterable="false" multiple v-model="form.tags_disable" @search="onSearch" label="label"
                 :options="searchResults" placeholder="etiquetas desabilitar"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></v-select>
-                
+
               <button type="submit"
                 class="text-white   bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
-            
-              </div>
-
-
-
-              <AutocompleteSearch :use-input="true" v-model="form.tags_strings"/>
-            
-              
+            </div>
+            <AutocompleteSearch :use-input="true" v-model="form.tags_strings" />
           </form>
           <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images.data" :key="image.id" class="relative ">
               <a :href="'/storage/imagesPost/' + image.imagen" data-fancybox="gallery" loop>
                 <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e; " class="absolute right-0" />
+
                 <div v-if="image.pegi_18" class="nsfw-style absolute">NSFW</div>
                 <img v-if="image.light_version_imagen" class=""
                   :src="'/storage/light_versions/' + image.light_version_imagen" :alt="image.name">
                 <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name" :title="image.name">
               </a>
               <div class="bg-white uppercase text-center image-name-list">
-                {{ image.danbooru_url }}
+                {{ image.name }}
               </div>
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
-                <Link :href="route('images.show', image.id)">Enlace </Link>
+                <Link :href="route('images.show', image.id)" class="flex">Enlace <div v-if="image.secondary_tags">✅</div> <div v-else>❌</div> </Link>
               </h1>
               <div>
-                <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
+                <Link :href="route('image.addFavorite', image.id)" method="post">Enlace  </Link>
                 <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
                 <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
               </div>
@@ -109,10 +103,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 /* import specific icons */
 import { faLock, faHeart } from '@fortawesome/free-solid-svg-icons'
 
-import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
+import { faHeart as faRegularHeart,faSquareCheck } from '@fortawesome/free-regular-svg-icons'
+
 
 /* add icons to the library */
-library.add(faLock, faHeart, faRegularHeart)
+library.add(faLock, faHeart, faRegularHeart,faSquareCheck)
 
 
 const { images, tags, tags_disable,num,tags_strings } = defineProps(['images', 'tags', 'tags_disable','num','tags_strings']);
@@ -137,19 +132,6 @@ const serchImage = () => {
 
 };
 
-
-//import axios from 'axios';
-
-
-
-
-
-
-
-
-
-
-//defineProps({ images: Array,tags:Array })
 
 
 
@@ -239,6 +221,8 @@ ul#vs2__listbox {
   padding: 0 0 5vh 0;
   display: flex;
 }
+
+
 </style>
 
 

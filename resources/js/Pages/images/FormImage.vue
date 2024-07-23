@@ -1,12 +1,22 @@
 <template>
     <AppLayout :title="!image?'Formulario Imagen':'Editando ' + image.name">
         <template #header>
-            <h2 v-if="!image" class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Nueva Imagen 
+            <div v-if="!image" class="flex justify-between">
+            <h2  class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Nueva Imagen
             </h2>
-            <h2 v-else class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <div >
+                <Link  :href="route('image.seeByUrl')" 
+            class="  bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            Subir por url  </Link>
+            </div>
+            </div>
+            <div v-else >
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Editando  {{ image.id }}: {{ image.name }} 
             </h2>
+            </div>
+        
             
         </template>
 
@@ -182,6 +192,7 @@ import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from 'yup';
+import { Link } from '@inertiajs/vue3';
 //import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
 //
@@ -357,9 +368,8 @@ const handleImageChange = (event) => {
 
 
 
-
 onMounted(() => {
-    // Lógica que se ejecutará después de que el componente se haya montado en el DOM
+    // 
     Fancybox.bind('[data-fancybox]', {
     });
 
@@ -409,6 +419,18 @@ export default {
 };
 
 
+
+const serchImage = () => {
+
+const selectedTags = form.tags.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
+const selectedTagsName = form.tags.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
+
+const selectedTagsDisable = form.tags_disable.map((tag) => tag.value); // Obtener solo los valores de las etiquetas seleccionadas
+const selectedTagsNameDisable = form.tags_disable.map((tag) => tag.label); // Obtener solo los valores de las etiquetas seleccionadas
+
+router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable,num:form.num,tags_strings:form.tags_strings });
+
+};
 
 </script>
 

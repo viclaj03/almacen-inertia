@@ -29,7 +29,7 @@ class UniqHash implements ValidationRule
         }
 
     
-        $threshold = 10; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
+        $threshold = 5; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
         $hasher = new ImageHash(new DifferenceHash());
         $imagenHash =  $hasher->hash($value->path());
@@ -38,6 +38,9 @@ class UniqHash implements ValidationRule
            // dd($similarImages);
 
         //$image = ImagePost::where('imagen_hash','=',$imagenHash)->first();
+
+
+        
         if($similarImages->count() && request('hash_ignore') != 1){
             
             $fail('ya existe este hash puedes verlo  <a target="_blank" class="text-white" href="' . route('images.show', $similarImages->first()) . '">aquí</a>. ademade de otras  ->'  .'  <a target="_blank" class="text-white" href="' . route('images.uniqHash', ['imagenHash' => $imagenHash]) . '">' . ($similarImages->count() -1) . '</a> <br>hash: '. $imagenHash);

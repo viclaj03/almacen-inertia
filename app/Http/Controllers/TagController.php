@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Modelo;
 use App\Models\Tag;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
@@ -40,6 +41,22 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
+
+        /*$tags = Tag::all();
+        
+        foreach($tags as $tag){
+            $name =  str_replace(' ','_',$tag->name);
+
+            $images = ImagePost::where('secondary_tags', 'LIKE', '%' . $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', '% ' . $name)
+        ->orWhere('secondary_tags','=', $name)->get();
+        
+        $tag->post_count = $images->count();
+        $tag->save();
+            
+        }
+        dd($tags);*/
  
         $name = $request->search ?? '';
         $num = $request->num ?? 15;
@@ -74,11 +91,15 @@ class TagController extends Controller
      */
     public function store(StoreTagRequest $request)
     {
+
         $tag = new Tag();
         $tag->name = $request->name;
         $tag->translate_esp = $request->translate;
         $tag->wiki = $request->wiki ?? '';
         $tag->category = $request->type;
+        $tag->others_names = $request->others_names;
+
+        
         $tag->save();
 
         if ($tag->category == 3) {
@@ -91,13 +112,21 @@ class TagController extends Controller
             $artist = new Artist();
             $artist->name = $request->name;
             $artist->tag_id = $tag->id;
+            $artist->urls = $request->ulr_artist;
             $artist->save();
-            foreach($urlList as $url){
+            /*foreach($urlList as $url){
                 $artis_url= new ArtistUrl();
                 $artis_url->artist_id = $artist->id;
                 $artis_url->url = $url;
                 $artis_url->save();
-            }
+            }*/
+        } else if($tag->category == 5){
+            $model = new Modelo();
+            $model->name = $request->name;
+            $model->tag_id = $tag->id;
+            
+            $model-> urls =  $request->ulr_artist;
+            $model->save();
         }
 
     }
@@ -107,10 +136,13 @@ class TagController extends Controller
      */
     public function show(Tag $tag)
     {
+
+        $name = str_replace(' ','_',$tag->name);
         
-        $images = ImagePost::wherehas('tags', function ($q) use ($tag) {
-            $q->where('tag_id',$tag->id);
-        });//->inRandomOrder()->limit(10)->get();
+        $images = ImagePost::where('secondary_tags', 'LIKE', '%' . $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', '% ' . $name)
+        ->orWhere('secondary_tags','=', $name);
 
         if (!Auth::user() || (Auth::user() && !Auth::user()->pegi_18)) {
             $images->where('pegi_18', '!=', true);
@@ -118,12 +150,18 @@ class TagController extends Controller
         
         $images = $images->inRandomOrder()->limit(10)->get();
 
+       
         $artist= null;
         $urls = null;
 
         if($tag->category == 3){
             $artist = $tag->artist;
-            $urls = $artist->urls;
+            $urls = $artist->urls_old;
+        }elseif($tag->category == 5){
+
+            $urls =explode("\n",$tag->model->urls);
+
+            
         }
 
         $tag = $tag->loadCount('imagePosts');
@@ -140,10 +178,13 @@ class TagController extends Controller
         $url_list = null;
 
         if($tag->category == 3){
-            $urls = $tag->artist->urls->pluck('url')->toArray();
+            $urls = $tag->artist->urls_old->pluck('url')->toArray();
 
         // Convertir las URLs en un solo texto con saltos de línea
         $url_list = implode("\n", $urls);
+        } elseif($tag->category == 5){
+            $url_list = Modelo::where('tag_id',$tag->id)->first()->urls;
+            
         }
 
 
@@ -156,56 +197,71 @@ class TagController extends Controller
     public function update(UpdateTagRequest $request, Tag $tag)
     {
 
-        if($tag->category == 3 && $request->type != 3){
+
+
+        
+
+        /*if($tag->category == 3 && $request->type != 3){
             dd('no se puede cambiar un artista de categoria  momento');
-        }
+        }*/
 
         $tag->name = $request->name;
         $tag->translate_esp = $request->translate;
-        $tag->wiki = $request->wiki;
-        $tag->category = $request->type;
+        $tag->wiki = $request->wiki ?? '';
+
+        
+
+        
 
 
-        $dataChanged = false;
+        if ($request->type == 3) {
 
-
-        if ($tag->category == 3) {
-
-
-            $ulr_artist = $request->ulr_artist;
-            $newUrls = explode("\n", $ulr_artist);
-            $newUrls = array_map('trim', $newUrls);
-            $newUrls = array_filter($newUrls);
-
-            $existingUrls = $tag->artist->urls->pluck('url')->toArray();
-            
-            if ($existingUrls !== $newUrls) {
-                dd($tag->artist->id);
-                $artist = ArtistUrl::where('artist_id', $tag->artist->id);
-                dd($artist);
-                // Eliminar todas las URLs existentes para este tag (opcional, depende de tu lógica)
-                //ArtistUrl::where('artist_id', $tag->id)->delete();
-    
-                // Luego, guardar cada URL nueva en la base de datos
-                /*foreach ($request['ulr_artist'] as $urlData) {
-                    ArtistUrl::create([
-                        'artist_id' => $tag->id,
-                        'url' => $urlData['url'],
-                    ]);
-                }*/
-    
-                $dataChanged = true;
+            $artist = Artist::where('tag_id', $tag->id)->first();
+            if(!$artist){
+                if($tag->category == 5){
+                    $artist = Artist::where('tag_id', $tag->id)->first()->delete();
+                }
+                $artist = new artist();
+                $artist->name = $request->name;
+                $artist->tag_id = $tag->id;
+                $artist-> urls =  $request->ulr_artist;
+                $artist->save();
+            } else{
+                $artist->name = $request->name;
+                $artist->tag_id = $tag->id;
+                $artist-> urls =  $request->ulr_artist;
+                $artist->save();
+            }
+            $artist->name = $request->name;
+            $artist->urls = $request->ulr_artist;
+           // $artist->save();            
+        } else if($request->type == 5){
+            $modelo = Modelo::where('tag_id',$tag->id)->first();
+            if(!$modelo){
+                if($tag->category == 3){
+                    $artist = Artist::where('tag_id', $tag->id)->first()->delete();
+                }
+                $modelo = new Modelo();
+                $modelo->name = $request->name;
+                $modelo->tag_id = $tag->id;
+                $modelo-> urls =  $request->ulr_artist;
+                $modelo->save();
+            } else{
+                $modelo->name = $request->name;
+                $modelo->tag_id = $tag->id;
+                $modelo-> urls =  $request->ulr_artist;
+                $modelo->save();
             }
         }
 
         
 
-        if($dataChanged){
-            dd('cambio las url pero no se aplica actualmente ');
-        } else{
+
+
+            $tag->category = $request->type;
             $tag->save();
             return to_route('tags.show',$tag);
-        }
+        
         
 
     }
@@ -216,6 +272,28 @@ class TagController extends Controller
      */
     public function destroy(Tag $tag)
     {
-        //
+        
+
+        $imagesDirect = ImagePost::wherehas('tags', function ($q) use ($tag) {
+            $q->where('tag_id',$tag->id);
+        })->get();
+
+        $images = ImagePost::paginate(9);
+        if($imagesDirect->count()){
+            dd($imagesDirect,'primero');
+        }
+
+        $name = str_replace(' ','_',$tag->name);
+
+        $images = ImagePost::where('secondary_tags', 'LIKE', '%' . $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', $name . ' %')
+        ->orWhere('secondary_tags', 'LIKE', '% ' . $name)
+        ->orWhere('secondary_tags','=', $name)->get();
+
+        
+        if($images->count()){
+            dd($images,9,$tag->name);
+        }
+        $tag->delete();
     }
 }

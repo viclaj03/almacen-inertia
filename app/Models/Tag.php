@@ -17,6 +17,10 @@ class Tag extends Model
     public function artist(){
         return $this->hasOne(Artist::class);
     }
+    
+    public function model(){
+        return $this->hasOne(Modelo::class);
+    }
 
 
 
@@ -75,6 +79,10 @@ class Tag extends Model
             $tagtagName = str_replace('_', ' ', $tagName);
             $tag = self::where('name', $tagtagName)->first();
 
+            if($tagName == ' ' || $tagName == ''){
+                return;
+            }
+
         if(!$tag){
             $tag = new Tag();
             $tag->name = $tagtagName;
@@ -97,9 +105,12 @@ class Tag extends Model
             $tagtagName = str_replace('_', ' ', $tagName);
 
             $tag = self::where('name', $tagtagName)->first();
-
+            if($tagName == ' ' || $tagName == ''){
+                return;
+            }
         if(!$tag){
             $tag = new Tag();
+            
             $tag->name = $tagtagName;
             $tag->translate_esp = $tagtagName;
             $tag->wiki =  '';

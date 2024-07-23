@@ -21,7 +21,7 @@
                             <label for="name"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
 
-                            <Field name="name" v-model="form.name" type="text" @input="autoTranslate"
+                            <Field name="name" v-model="form.name" type="text" @change="autoTranslate"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Titulo" />
                             <ErrorMessage name="name" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
@@ -38,6 +38,19 @@
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Tradución en Español" />
                             <ErrorMessage name="translate" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
+                            <div v-if="form.errors.translate" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" v-html="form.errors.translate"></div>
+
+
+                        </div>
+
+                        <div class="mb-4 p-5">
+                            <label for="Traducion"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Otros Nombres
+                            </label>
+                            <Field name="others_names" v-model="form.others_names" type="text" id="Traducion"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="otros nombres separados por coma ," />
+                            <ErrorMessage name="others_names" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
 
                         </div>
 
@@ -65,12 +78,13 @@
                                 <option value="2">Character</option>
                                 <option value="3">Artist</option>
                                 <option value="4">Meta</option>
+                                <option value="5">Modelo</option>
                             </Field>
                             <ErrorMessage name="type" class=" text-xs italic uppercase"  :class="{'error-text':form.type !=3 }" />
                         </div>
 
 
-                        <div v-if="form.type == 3" class="mb-4 p-5">
+                        <div v-if="form.type == 3 || form.type == 5" class="mb-4 p-5">
                             <h2 class="h2" v-if="tag">
                                 no funciona en edicion
                             </h2>
@@ -114,6 +128,7 @@ const form = useForm({
     wiki: tag ? tag.wiki : "",
     type: tag ? tag.category : -1,
     ulr_artist: tag ? url_list : "",
+    others_names:tag? tag.others_names:"",
 });
 
 
@@ -181,6 +196,10 @@ const mySchema = yup.object({
 
 .tag-type-4{
     background-color: #ead084;
+}
+
+.tag-type-5{
+    background-color: #900e94;
 }
 
 

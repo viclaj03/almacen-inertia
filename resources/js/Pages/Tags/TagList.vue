@@ -37,6 +37,7 @@
                                 <option value="2">Character</option>
                                 <option value="3">Artist</option>
                                 <option value="4">Meta</option>
+                                <option value="5">Model</option>
                             </select>
                             </div>
                   <table class="table border w-full bg-white custom-table">
@@ -63,6 +64,7 @@
                                 <td v-if="tag.category == 2" class="border p-3" :class="categoryClass(tag.category)">Character </td>
                                 <td v-if="tag.category == 3" class="border p-3" :class="categoryClass(tag.category)">Artist </td>
                                 <td v-if="tag.category == 4" class="border p-3" :class="categoryClass(tag.category)">Meta </td>
+                                <td v-if="tag.category == 5" class="border p-3" :class="categoryClass(tag.category)">Modelo</td>
                                 <td class="border p-3" :class="categoryClass(tag.category)"> {{tag.post_count }}</td>
                             </tr>
                         </tbody>
@@ -130,6 +132,7 @@ const categoryClass = (category) => {
     2: 'character',
     3: 'artist',
     4: 'meta',
+    5:'model'
   };
 
   // Retorna la clase correspondiente según el valor de la categoría
@@ -178,6 +181,10 @@ const categoryClass = (category) => {
 
 .artist {
   color: rgb(255, 0, 25);
+}
+
+.model {
+  color: #900e94;
 }
 
 @media only screen and (max-width: 600px) {

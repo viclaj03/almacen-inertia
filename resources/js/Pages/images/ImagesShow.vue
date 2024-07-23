@@ -3,7 +3,7 @@
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-      fsf  {{ image.name }} <sup v-if="image.pegi_18" class="nsfw-style">NSFW</sup> <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e;" /> 
+      {{ image.name }} <sup v-if="image.pegi_18" class="nsfw-style">NSFW</sup> <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e;" /> 
       </h2>
       <br />
       <Link :href="route('images.edit', image)"
@@ -103,16 +103,31 @@
              
 
             
-<div class="text-white">---Secondary--</div>
+            <div class="text-white">---Secondary--</div>
+            <div v-if="tag_string_artist.length">
             <h3 class="text-gray-800 dark:text-gray-200">Artist</h3>
             
             <ul v-for="tag in tag_string_artist">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 
                 <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name }}</Link> {{
+                  tag.post_count }}
+                  
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="tag_string_modelo.length">
+            <h3 class="text-gray-800 dark:text-gray-200">modelo</h3>
+            
+            <ul v-for="tag in tag_string_modelo">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
+                
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name }}</Link> {{
                   tag.post_count }} 
               </li>
             </ul>
+          </div>
 
             <h3 class="text-gray-800 dark:text-gray-200">Copyrights</h3>
             <ul v-for="tag in tag_string_copyright">
@@ -132,11 +147,20 @@
               </li>
             </ul>
 
+            
+
 
             <h3 class="text-gray-800 dark:text-gray-200">General</h3>
             <ul v-for="tag in tag_string_general">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 
+                <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name  }}</Link> {{
+                  tag.post_count }} 
+              </li>
+            </ul>
+            <h3 class="text-gray-800 dark:text-gray-200">Meta</h3>
+            <ul v-for="tag in tag_string_meta">
+              <li class="text-blue-600 tooltip" style="font-weight: bold;">
                 <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name  }}</Link> {{
                   tag.post_count }} 
               </li>
@@ -172,10 +196,6 @@
           {{image.description }}
         </div>
         
-        
-
-
-
             <div><button @click="destroy(image)"
                 class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
                 Eliminar
@@ -231,15 +251,13 @@ library.add(faLock, faHeart, faRegularHeart)
 
 
 
-defineProps({ image: Object, tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, 
+defineProps({ image: Object,tag_string_modelo:Array ,tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, 
   tag_string_unknow:Array,tag_string_general:Array,tag_string_copyright:Array,tag_string_character:Array,tag_string_artist:Array,tag_string_meta:Array })
 
 
 async function destroy(image) {
   if (confirm("Eliminar imagen " + image.name)) {
-   // alert(999)
-    //var l = await  axios.delete(`/images/${id}`);
-    //console.log(l)
+   
     router.delete(`/images/${image.id}`);
   }
 }
@@ -327,60 +345,14 @@ async function destroy(image) {
 }
 
 
-.collapsible {
-  background-color: #777;
-  color: white;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 15px;
-}
 
-.active, .collapsible:hover {
-  background-color: #555;
-}
 
-.collapsible:after {
-  content: '\002B';
-  color: white;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
-}
 
-.active:after {
-  content: "\2212";
-}
 
-.content {
-  padding: 0 18px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out;
-  background-color: #f1f1f1;
-}
 
 </style>
 
 
-<script> 
-var coll = document.getElementsByClassName("collapsible");
-var i; 
 
-for (i = 0; i < coll.length; i++) {
-  coll[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.maxHeight){
-      content.style.maxHeight = null; 
-    } else {
-      content.style.maxHeight = content.scrollHeight + "px";
-    } 
-  });
-}
-</script>
 
 

@@ -50,8 +50,13 @@ export default {
     async getSuggestions(value) {
       this.show_list = true
       try {
-        const tag_search = value.split(" ").pop();
-
+      
+        let tag_search = value.split(" ").pop();
+        if (tag_search.startsWith('-')) {
+          
+          tag_search = tag_search.substring(1);
+          
+        }
         const response = await axios.get(`/api/tags?name=${tag_search.replace('_',' ')}`);
         
         this.suggestions = response.data;
@@ -60,8 +65,18 @@ export default {
       }
     },
     selectSuggestion(suggestion) {
+      
+      
       const tags_array =  this.modelValue.split(" ")
-      tags_array[tags_array.length -1] = suggestion.name.replace(/\s+/g, '_')
+
+      if(tags_array[tags_array.length -1].startsWith('-')){
+        tags_array[tags_array.length -1] = '-' + suggestion.name.replace(/\s+/g, '_')
+      }else{
+        tags_array[tags_array.length -1] = suggestion.name.replace(/\s+/g, '_')
+      }
+
+      
+      
       const tags_string = tags_array.join(' ')
       this.$emit('update:modelValue', tags_string);
       this.$refs.inputField.focus()
@@ -77,6 +92,7 @@ export default {
     else if (category === 2) return 'category-2';
     else if (category === 3) return 'category-3';
     else if (category === 4) return 'category-4';
+    else if (category === 5) return 'category-5';
     else return '';
   },
   hideSuggestions() {
@@ -116,6 +132,10 @@ export default {
 
 .category-4{
   color: #f7e7c3;
+}
+
+.category-5{
+  color: #900e94;
 }
 
 

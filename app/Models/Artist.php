@@ -10,7 +10,7 @@ class Artist extends Model
 {
     use HasFactory;
     
-    public function urls(){
+    public function urls_old(){
         return $this->hasMany(ArtistUrl::class);
     }
 

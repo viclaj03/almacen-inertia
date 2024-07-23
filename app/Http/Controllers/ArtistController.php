@@ -75,7 +75,7 @@ class ArtistController extends Controller
     public function show(string $id)
     {
         $user = Auth::user();
-        $artist = Artist::with('tag','urls')->findOrFail($id);
+        $artist = Artist::with('tag','urls_old')->findOrFail($id);
 
         $comment = $user->getCommentForArtist($id);
 

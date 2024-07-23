@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NotTagUse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,8 +23,10 @@ class UpdateTagRequest extends FormRequest
      */
     public function rules(): array
     {
+        
+        $old_tag = $this->route('tag'); 
         return [
-            //
+            'name'=>[new NotTagUse($old_tag)]
         ];
     }
 }

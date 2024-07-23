@@ -110,9 +110,11 @@ Route::resource('/images',ImagePostController::class);
 
 Route::post('/add-fovorite/{id}',[ImagePostController::class,'addFavorite'])->name('image.addFavorite');
 
+Route::get('/upload-url',[ImagePostController::class,'seeByUrl'])->name('image.seeByUrl');
+
 Route::get('/my-favorite',[ImagePostController::class,'seeFavorite'])->name('image.favorite');
 
-Route::any('/search',[ImagePostController::class,'search'])->name('image.search');
+Route::get('/search',[ImagePostController::class,'search'])->name('image.search');
 
 Route::get('/UniqHash/{imagenHash}',[ImagePostController::class,'searchByUniqHash'])->name('images.uniqHash');
 

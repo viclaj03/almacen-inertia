@@ -35,6 +35,13 @@ class StoreTagRequest extends FormRequest
                     return $query->where('name', $this->name);
                 }),
             ],
+            'translate'=>[
+                Rule::unique('tags', 'translate_esp')->where(function ($query) {
+                    
+                    return $query->where('translate_esp', $this->translate);
+                }),
+                
+            ]
         ];
     }
 
@@ -42,6 +49,8 @@ class StoreTagRequest extends FormRequest
     {
         return [
             'name.unique' => 'El tag :input ya existe. puedes verlo aqui <a class="text-white" href="' . route('tags.show', (DB::table('tags')->where('name', $this->name)->get()->value('id')??  0)) . '">aquí</a>.',
+            'translate.unique' => 'El tag :input ya existe. puedes verlo aqui <a class="text-white" href="' . route('tags.show', (DB::table('tags')->where('translate_esp', $this->translate)->get()->value('id')??  0)) . '">aquí</a>.',
+
         ];
     }
 
