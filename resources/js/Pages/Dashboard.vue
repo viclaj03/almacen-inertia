@@ -3,7 +3,7 @@
     <AppLayout title="Dashboard">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Escritoria
+                Escritorio
             </h2>
         </template>
 
@@ -16,13 +16,18 @@
                   <div class=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4 m-1">
             <div v-for="image in images" :key="image.id" class="">
               <a :href="'storage/imagesPost/' + image.imagen" data-fancybox="gallery">
+                <font-awesome-icon v-if="image.private" icon="lock" style="color: #eae43e; " class="absolute " />
+
+                <div v-if="image.pegi_18" class="nsfw-style absolute">NSFW</div>
+                
+                
                 <img v-if="image.light_version_imagen" class="" :src="'/storage/light_versions/' + image.light_version_imagen" :alt="image.name">
                 <img v-else class="" :src="'/storage/imagesPost/' + image.imagen" :alt="image.name">              </a>
-              <div class="bg-white uppercase text-center">
-                {{ image.name }}
+              <div class="bg-white uppercase text-center image-name-list">
+               {{ image.name }}
               </div>
               <h1 class="btn  border-red-900 border-4 bg-teal-900">
-                <Link :href="route('images.show', image.id)">Enlace </Link>
+                <Link :href="route('images.show', image.id)">Enlace <div v-if="image.secondary_tags">✅</div> <div v-else>❌</div> </Link>
               </h1>
               <div>
                 <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
@@ -88,27 +93,24 @@ onMounted(() => {
 
 
 <style>
-.tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
+
+.nsfw-style {
+  color: red;
+  border: 1px dashed red;
+  font-size: 1.5vh;
 }
 
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 520px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
 
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
+
+
+.image-name-list {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 7vh;
+  white-space: nowrap;
 }
 
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-}
+
+
+
 </style>

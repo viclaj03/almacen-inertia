@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\TagNameValid;
+use App\Rules\UrlNotDuplicate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -33,15 +35,17 @@ class StoreTagRequest extends FormRequest
                 'max:1250',
                 Rule::unique('tags', 'name')->where(function ($query) {
                     return $query->where('name', $this->name);
-                }),
+                }),new TagNameValid
             ],
             'translate'=>[
                 Rule::unique('tags', 'translate_esp')->where(function ($query) {
                     
                     return $query->where('translate_esp', $this->translate);
                 }),
-                
-            ]
+                new TagNameValid
+            ],
+
+            'ulr_artist'=>[new UrlNotDuplicate]
         ];
     }
 
@@ -50,7 +54,6 @@ class StoreTagRequest extends FormRequest
         return [
             'name.unique' => 'El tag :input ya existe. puedes verlo aqui <a class="text-white" href="' . route('tags.show', (DB::table('tags')->where('name', $this->name)->get()->value('id')??  0)) . '">aquí</a>.',
             'translate.unique' => 'El tag :input ya existe. puedes verlo aqui <a class="text-white" href="' . route('tags.show', (DB::table('tags')->where('translate_esp', $this->translate)->get()->value('id')??  0)) . '">aquí</a>.',
-
         ];
     }
 

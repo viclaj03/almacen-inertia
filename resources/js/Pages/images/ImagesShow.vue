@@ -27,7 +27,7 @@
                 <Link :href="route('tags.show', tag)">?  </Link>
                 <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }} </Link> {{
                   tag.image_posts_count }}  
-                  <Link  :href="route('artist.addFavorite', tag.artist_id)" method="post">
+                  <Link as="button" :href="route('artist.addFavorite', tag.artist_id)" method="post">
                   <font-awesome-icon v-if="tag.isFavorite" icon="heart" style="color: #c5dc18;" /> 
                   <font-awesome-icon v-else icon="heart" style="color: #000000;" /> 
                   </Link>
@@ -44,7 +44,7 @@
             <h3 class="text-gray-800 dark:text-gray-200">Copyright</h3>
             <ul v-for="tag in tag_copyright">
               <li class="text-blue-600 tooltip" style="font-weight: bold;">
-                <Link :href="route('tags.show', tag)">?</Link>
+                <Link  :href="route('tags.show', tag)">?</Link>
                 <Link :href="route('image.search', { tags: [tag.id], tags_name: [tag.name] })"> {{ tag.name }}</Link> {{
                   tag.image_posts_count }} <span class="tooltiptext">
 
@@ -112,6 +112,10 @@
                 
                 <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name }}</Link> {{
                   tag.post_count }}
+                  <Link as="button"  :href="route('artist.addFavorite', tag.artist_id)" method="post">
+                  <font-awesome-icon v-if="tag.isFavorite" icon="heart" style="color: #c5dc18;" /> 
+                  <font-awesome-icon v-else icon="heart" style="color: #000000;" /> 
+                  </Link>
                   
               </li>
             </ul>
@@ -125,6 +129,13 @@
                 
                 <Link :href="route('image.search', { tags_strings: tag.name.replace(/ /g, '_') })"> {{ tag.name }}</Link> {{
                   tag.post_count }} 
+
+
+                  <Link as="button"  :href="route('modelo.addFavorite', tag.modelo_id)" method="post">
+                  <font-awesome-icon v-if="tag.isFavorite" icon="heart" style="color: #c5dc18;" /> 
+                  <font-awesome-icon v-else icon="heart" style="color: #000000;" /> 
+                  </Link>
+
               </li>
             </ul>
           </div>
@@ -181,7 +192,7 @@
           </div>
           <div class="mx-auto image-show">
             
-            <video loop="loop" v-if="image.light_version_imagen && image.file_ext =='mp4'" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls >
+            <video loop="loop" v-if="image.light_version_imagen && (image.file_ext =='webm' || image.file_ext =='mp4')" :poster="'/storage/light_versions/' + image.light_version_imagen" class="w-96" controls >
               <source :src="'/storage/imagesPost/' + image.imagen" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -189,8 +200,14 @@
             <div class="bg-gray-600 row-auto">{{ image.name }} </div>
             <div>
                 <Link :href="route('image.addFavorite', image.id)" method="post" >Enlace </Link>
-                <font-awesome-icon v-if="image.isFavorited" icon="heart" style="color: #c5dc18;" />
+                <font-awesome-icon v-if="localImage.isFavorited" icon="heart" style="color: #c5dc18;" />
                 <font-awesome-icon v-else icon="fa-regular fa-heart" style="color: #eb1414;" />
+                <div><button @click="newAddFavorite(localImage)"
+                class="mt-10 bg-transparent hover:bg-yellow-500 text-yellow-700 font-semibold hover:text-white py-2 px-4 border border-yellow-500 hover:border-transparent rounded">
+                {{ localImage.isFavorited ? 'Unfavorite' : 'Favorite' }}
+                
+              </button>
+            </div>
               </div>
               <div class="border bg-rose-600 text-white">
           {{image.description }}
@@ -201,6 +218,10 @@
                 Eliminar
               </button></div>
           </div>
+
+
+          
+          
         </div>
 
         
@@ -210,8 +231,8 @@
           <p class="text-gray-800 dark:text-gray-200">ID: <span>{{ image.id }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">Subido: <span>{{ image.created_at }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">actulizado: <span>{{ image.updated_at }}</span></p>
-          <p class="text-gray-800 dark:text-gray-200">Peso: <span>{{ image.file_size }}</span></p>
-          <p class="text-gray-800 dark:text-gray-200">Hash: <span>{{ image.imagen_hash }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">Peso: <span>{{formatFileSize(image.file_size) }}</span></p>
+          <p class="text-gray-800 dark:text-gray-200">Hash: <a target="_blank" class="text-white" :href="route('images.uniqHash',{'imagenHash':image.imagen_hash}) ">  <span>{{ image.imagen_hash }}</span>    </a> </p>
           <p class="text-gray-800 dark:text-gray-200">md5:<span>{{ image.md5_hash }}</span></p>
           <p v-if="image.original_url" class="text-gray-800 dark:text-gray-200">Original url: <a target="_blank"
               :href="image.original_url"><span class="text-blue-600">{{ image.original_url }}</span></a> </p>
@@ -232,6 +253,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
+import axios from  'axios';
 
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -244,6 +266,9 @@ import { faLock, faHeart } from '@fortawesome/free-solid-svg-icons'
 
 import { faHeart as faRegularHeart } from '@fortawesome/free-regular-svg-icons'
 
+import { ref } from 'vue';
+
+
 /* add icons to the library */
 library.add(faLock, faHeart, faRegularHeart)
 
@@ -251,8 +276,40 @@ library.add(faLock, faHeart, faRegularHeart)
 
 
 
-defineProps({ image: Object,tag_string_modelo:Array ,tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, 
+
+
+const props = defineProps({ image: Object,tag_string_modelo:Array ,tag_general: Array, tag_copyright: Array, tag_character: Array, tag_artist: Array, tag_meta: Array, 
   tag_string_unknow:Array,tag_string_general:Array,tag_string_copyright:Array,tag_string_character:Array,tag_string_artist:Array,tag_string_meta:Array })
+
+
+
+
+
+const emit = defineEmits(['update:modelValue']);
+
+// Hacemos una copia local de la prop que queremos modificar
+const localImage = ref({ ...props.image });
+console.log(localImage)
+async function newAddFavorite(image){
+  
+  try {
+    // Hacemos la solicitud para marcar o desmarcar la imagen como favorita
+    const respuesta = await axios.post(`/add-image-favorite/${image.id}`);
+    console.log(respuesta.data);
+
+    // Actualizamos el estado de 'isFavorite' en la copia local
+    localImage.value.isFavorited = respuesta.data.favorited;
+    
+
+    // Emitimos el cambio al componente padre si es necesario
+    emit('update:modelValue', localImage.value);
+
+  } catch (error) {
+    console.error('Error al actualizar el estado de favorito:', error);
+  }
+
+}
+
 
 
 async function destroy(image) {
@@ -261,6 +318,21 @@ async function destroy(image) {
     router.delete(`/images/${image.id}`);
   }
 }
+
+
+
+function formatFileSize(size) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
+
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
+}
+
 
 
 </script>

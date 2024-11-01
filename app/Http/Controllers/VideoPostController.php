@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
-
+use Illuminate\Http\RedirectResponse;
 
 class VideoPostController extends Controller
 {
@@ -39,7 +39,7 @@ class VideoPostController extends Controller
 
     public function index()
     {
-        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(300 );
+        $videos = VideoPost::where('pegi_18', false)->orWhere('pegi_18', Auth::user()->pegi_18)->latest()->paginate(300);
 
         return Inertia::render('VideoPost/VideoList', compact('videos', ));
 
@@ -59,7 +59,12 @@ class VideoPostController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    { 
+    {
+        $validated = $request->validate([
+            'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime,video/mp4|required',
+        ]);
+
+
         //for ($i=0; $i < 5; $i++){
         $videoPost = new VideoPost();
         $videoPost->title = $request->title;
@@ -67,14 +72,31 @@ class VideoPostController extends Controller
         $videoPost->url_original = $request->original_url;
 
         $videoPost->pegi_18 = $request->pegi18;
-        $videoPost->private = false;
+        $videoPost->private = $request->pegi18;
         $videoPost->user_post = Auth::user()->id;
 
         $video = $request->video;
         //dd($video);
         $nombrevideo = uniqid() . '.' . $video->getClientOriginalExtension();
 
-        $videoPost->video_path = $nombrevideo;
+
+
+        // Crear la subcarpeta con el formato año/mes
+        $currentDatePath = date('Y/m'); // Ejemplo: '2024/08'
+
+        
+
+        // Guardar el video en la subcarpeta
+        $videoPath = $currentDatePath . '/' . $nombrevideo;
+
+        $videoPost->video_path = $videoPath;
+
+        // Obtener la ruta temporal del video
+       
+
+
+
+        $videoPost->video_path = $videoPath;
 
         //prin
 
@@ -108,15 +130,15 @@ class VideoPostController extends Controller
         $frame->save(storage_path('app/public/light_versions2/' . $lightVersionPath));
 
         // Asigna la ubicación de la imagen generada al modelo ImagePost
-        $videoPost->image_path  = $lightVersionPath;
+        $videoPost->image_path = $lightVersionPath;
 
 
         //fin
 
         $videoPost->save();
-        Storage::disk('public')->putFileAs('VideosPost', $video, $nombrevideo);
+        Storage::disk('public')->putFileAs('VideosPost/' . $currentDatePath, $video, $nombrevideo);
 
-       // }
+        // }
 
 
 
@@ -127,6 +149,7 @@ class VideoPostController extends Controller
      */
     public function show(VideoPost $video)
     {
+        
         return Inertia::render('VideoPost/VideoShow', compact('video', ));
     }
 

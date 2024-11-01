@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use BaconQrCode\Common\Mode;
+use DragonCode\Contracts\Cashier\Resources\Model;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -73,6 +75,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function favoriteArtist(){
         return $this->belongsToMany(Artist::class, artist::class,'','');
+    }
+
+
+
+    public function favoriteModels()
+    {
+        return $this->belongsToMany(Modelo::class, 'favorite_model', 'user_id', 'models_id');
+    }
+
+    public function favoriteModel(){
+        return $this->belongsToMany(Modelo::class, Modelo::class,'','');
     }
 
 

@@ -36,13 +36,15 @@
                        
                     </div> 
                         <div v-if="tag.category == 3 && artist" class="list-irl">
-                            
+                          
                             <ul v-for="url in urls" class="text-blue-400">
-                                <li><a :href='url.url'>{{ url.url }}</a></li>
+                                <li v-if="url.ur"><a :href='url.url'>{{ url.url }} l</a></li>
+                                <li v-else><a :href='url'>{{ url }}</a></li>
                             </ul>
                         </div>
-
+                        
                         <div v-else-if="tag.category == 5">
+                          
                             <ul v-for="url in urls" class="text-blue-400">
                                 <li><a :href='url'>{{ url }}</a></li>
                             </ul>

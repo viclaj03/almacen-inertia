@@ -26,6 +26,9 @@ class NotTagUse implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+
+
+
         
         if ($this->oldTag->name != $value){
             $name = str_replace(' ','_',$this->oldTag->name);

@@ -23,10 +23,6 @@ class ArtistController extends Controller
         
         $favoritos = request()->favoritos ;
 
-
-        
-       
-
         
         $artists = Artist::with('tag')->where('name','like','%' . $name . '%');
 
@@ -84,9 +80,11 @@ class ArtistController extends Controller
         
         $images = ImagePost::wherehas('tags', function ($q) use ($artist) {
             $q->where('tag_id',$artist->tag->id);
-        })->limit(10)->get();
+        })->limit(25)->get();
 
         
+
+        //dd($artist);
 
         foreach ($images as $image) {
             $image->isFavorited = $user->favoriteImages->contains($image->id);
@@ -122,13 +120,13 @@ class ArtistController extends Controller
 
     public function addFavorite(Request $request){
 
-        $image = Artist::findOrFail($request->id);
+        $artist = Artist::findOrFail($request->id);
 
-        if($image->isFavoritedByUser()){
+        if($artist->isFavoritedByUser()){
             //dd($image->favoritedBy->where('user_id',Auth::user()->id));
-            $image->favoritedBy()->detach(Auth::user()->id);
+            $artist->favoritedBy()->detach(Auth::user()->id);
         } else {
-            $image->favoritedBy()->attach(Auth::user()->id,['comment'=>"revisar","last_change_date"=>Carbon::now()]);
+            $artist->favoritedBy()->attach(Auth::user()->id,['comment'=>"revisar","last_change_date"=>Carbon::now()]);
         }
         
     }

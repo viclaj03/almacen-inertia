@@ -3,7 +3,7 @@
 
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        images
+        Posts
       </h2>
       <br />
       <Link :href="route('images.create')"

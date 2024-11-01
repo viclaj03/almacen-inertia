@@ -27,7 +27,8 @@ class TagController extends Controller
                 // Si no es el usuario con ID 1, redirige o devuelve una respuesta no autorizada
                 return redirect('/dashboard')->with('error', 'No tienes permiso para acceder a esta página.');
             }
-    
+
+            
             return $next($request);
         });
     }
@@ -42,25 +43,11 @@ class TagController extends Controller
     public function index(Request $request)
     {
 
-        /*$tags = Tag::all();
         
-        foreach($tags as $tag){
-            $name =  str_replace(' ','_',$tag->name);
-
-            $images = ImagePost::where('secondary_tags', 'LIKE', '%' . $name . ' %')
-        ->orWhere('secondary_tags', 'LIKE', $name . ' %')
-        ->orWhere('secondary_tags', 'LIKE', '% ' . $name)
-        ->orWhere('secondary_tags','=', $name)->get();
-        
-        $tag->post_count = $images->count();
-        $tag->save();
-            
-        }
-        dd($tags);*/
  
         $name = $request->search ?? '';
         $num = $request->num ?? 15;
-        $orderBy = $request->order  ?? 'id'; //'image_posts_count';
+        $orderBy = $request->order  ?? 'id';
         $tags = Tag::withCount('imagePosts')
         ->where(function ($query) use ($name) {
             $query->where('name', 'like', '%' . $name . '%')
@@ -74,7 +61,9 @@ class TagController extends Controller
 
         $filters = RequestFilter::all(['search', 'type']);
         
-        $tags = $tags->orderBy($orderBy, 'desc') ->paginate($num)->withQueryString();   
+        $tags = $tags->orderBy($orderBy, 'desc') ->paginate($num)->withQueryString();  
+        
+        
         return Inertia::render('Tags/TagList' , compact('tags','filters'));
     }
 
@@ -91,6 +80,7 @@ class TagController extends Controller
      */
     public function store(StoreTagRequest $request)
     {
+        
 
         $tag = new Tag();
         $tag->name = $request->name;
@@ -112,7 +102,20 @@ class TagController extends Controller
             $artist = new Artist();
             $artist->name = $request->name;
             $artist->tag_id = $tag->id;
-            $artist->urls = $request->ulr_artist;
+
+            //proceso urls
+
+             // 1. Separar las URLs por salto de línea
+            $urls_array = explode("\n", $request->ulr_artist);
+
+            // 2. Eliminar espacios en blanco antes y después de cada URL
+            $urls_array = array_map('trim', $urls_array);
+
+            // 3. Eliminar cualquier línea vacía resultante
+            $urls_array = array_filter($urls_array);
+
+
+            $artist->urls = json_encode($urls_array);// $request->ulr_artist;
             $artist->save();
             /*foreach($urlList as $url){
                 $artis_url= new ArtistUrl();
@@ -156,13 +159,14 @@ class TagController extends Controller
 
         if($tag->category == 3){
             $artist = $tag->artist;
-            $urls = $artist->urls_old;
+            $urls = json_decode($artist->urls);
         }elseif($tag->category == 5){
 
             $urls =explode("\n",$tag->model->urls);
 
             
         }
+       
 
         $tag = $tag->loadCount('imagePosts');
         
@@ -224,12 +228,41 @@ class TagController extends Controller
                 $artist = new artist();
                 $artist->name = $request->name;
                 $artist->tag_id = $tag->id;
-                $artist-> urls =  $request->ulr_artist;
+
+                
+             // 1. Separar las URLs por salto de línea
+            $urls_array = explode("\n", $request->ulr_artist);
+
+            // 2. Eliminar espacios en blanco antes y después de cada URL
+            $urls_array = array_map('trim', $urls_array);
+
+            // 3. Eliminar cualquier línea vacía resultante
+            $urls_array = array_filter($urls_array);
+
+
+            $artist->urls = json_encode($urls_array);// $request->ulr_artist;
+
+               // $artist->urls =  $request->ulr_artist;
                 $artist->save();
             } else{
                 $artist->name = $request->name;
                 $artist->tag_id = $tag->id;
-                $artist-> urls =  $request->ulr_artist;
+                            //proceso urls
+
+             // 1. Separar las URLs por salto de línea
+            $urls_array = explode("\n", $request->ulr_artist);
+
+            // 2. Eliminar espacios en blanco antes y después de cada URL
+            $urls_array = array_map('trim', $urls_array);
+
+            // 3. Eliminar cualquier línea vacía resultante
+            $urls_array = array_filter($urls_array);
+
+
+            $artist->urls = json_encode($urls_array);// $request->ulr_artist;
+
+
+               // $artist->urls =  $request->ulr_artist;
                 $artist->save();
             }
             $artist->name = $request->name;

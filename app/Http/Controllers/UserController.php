@@ -24,6 +24,7 @@ class UserController extends Controller
 
     public function index()
     {
+        
         if (!auth()->check() || auth()->user()->id !== 1) {
             // Si no es el usuario con ID 1, redirige o devuelve una respuesta no autorizada
             return redirect('/dashboard')->with('error', 'No tienes permiso para acceder a esta página.');
@@ -35,12 +36,12 @@ class UserController extends Controller
                 ->when(Request2::input('search'),function($query, $search) {
                     $query->where('name','like','%'.$search.'%')
                     ->OrWhere('email','like','%'.$search.'%');
-                })->paginate(6)
+                })->paginate(600)
                 ->withQueryString(),
                 'filters' => Request2::only(['search'])
         ]);
 
-        $users = User::paginate(10)->onEachSide(1);
+        $users = User::paginate(100);
         return Inertia::render('User',compact('users',));
     }
 

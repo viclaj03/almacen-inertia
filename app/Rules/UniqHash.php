@@ -34,7 +34,8 @@ class UniqHash implements ValidationRule
         $hasher = new ImageHash(new DifferenceHash());
         $imagenHash =  $hasher->hash($value->path());
         $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
-            ->get();//cambiar para varias
+            ->get();
+            //cambiar para varias
            // dd($similarImages);
 
         //$image = ImagePost::where('imagen_hash','=',$imagenHash)->first();
@@ -48,6 +49,5 @@ class UniqHash implements ValidationRule
       
 
         $value->hashing_image = $imagenHash->toHex();
-
     }
 }

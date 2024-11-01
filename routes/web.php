@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ArtistController;
+use App\Http\Controllers\ContentReviewController;
 use App\Http\Controllers\ImagePostController;
+use App\Http\Controllers\ModeloController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoPostController;
@@ -60,7 +62,7 @@ Route::middleware([
             $images = ImagePost::where('private', 0)
                                ->where('pegi_18', false);
         }
-        $images = $images->inRandomOrder()->limit(20)->get();
+        $images = $images->inRandomOrder()->limit(40)->get();
         $numImages = ImagePost::count();
         $numImages18 = ImagePost::where('pegi_18', '!=', true)->count();
         $imagesFaltan = ImagePost::wherehas('tags', function($q){
@@ -112,6 +114,8 @@ Route::post('/add-fovorite/{id}',[ImagePostController::class,'addFavorite'])->na
 
 Route::get('/upload-url',[ImagePostController::class,'seeByUrl'])->name('image.seeByUrl');
 
+Route::post('/upload-url',[ImagePostController::class,'uploadUrl'])->name('image.uploadUrl');
+
 Route::get('/my-favorite',[ImagePostController::class,'seeFavorite'])->name('image.favorite');
 
 Route::get('/search',[ImagePostController::class,'search'])->name('image.search');
@@ -127,6 +131,16 @@ Route::resource('/artist',ArtistController::class)->middleware('auth');
 
 Route::post('/add-artist-favorite/{id}',[ArtistController::class,'addFavorite'])->name('artist.addFavorite');
 
+Route::post('/add-modelo-favorite/{id}',[ModeloController::class,'addFavorite'])->name('modelo.addFavorite');
+
+Route::get('/recount-tags',[ContentReviewController::class,'reviewTagsCount'])->name('review.tagCount');
+
+Route::get('/recount-images',[ContentReviewController::class,'reviewImagesCount'])->name('review.imagesCount');
+
+Route::get('/reverse-search',[ContentReviewController::class,'reversePostSearch'])->name('review.imageSearch');
+
+
+Route::post('/add-image-favorite/{id}',[ImagePostController::class,'newAddFavorite'])->name('image.newfavorite');
 
 
 

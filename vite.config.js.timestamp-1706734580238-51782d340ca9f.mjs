@@ -1,4 +1,4 @@
-// vite.config.js
+// vite.conig.js
 import { defineConfig } from "file:///C:/xampp/htdocs/almacen/node_modules/vite/dist/node/index.js";
 import laravel from "file:///C:/xampp/htdocs/almacen/node_modules/laravel-vite-plugin/dist/index.mjs";
 import vue from "file:///C:/xampp/htdocs/almacen/node_modules/@vitejs/plugin-vue/dist/index.mjs";
@@ -18,7 +18,7 @@ var vite_config_default = defineConfig({
     })
   ],
   server: {
-    host: true
+    host: false
   }
 });
 export {

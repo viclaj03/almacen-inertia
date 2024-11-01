@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Http;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
 use Intervention\Image\Facades\Image;
+use PhpParser\Node\Stmt\TryCatch;
 
 class ImagePostController extends Controller
 {
@@ -90,7 +91,7 @@ class ImagePostController extends Controller
      */
     public function store(ImagePostRequest $request)
     {
-
+        
         $image = new ImagePost();
 
         $imagen = $request->image;
@@ -217,9 +218,6 @@ class ImagePostController extends Controller
         $lightVersionPath = 'app/public/light_versions/' . $lightVersionFilename;
 
         if (!in_array($extension, $extensionesVideo)) {
-
-
-
             Image::make($imagen->getRealPath())->resize(null, 360, function ($constraint) {
                 $constraint->aspectRatio();
                 //$constraint->upsize();
@@ -236,7 +234,9 @@ class ImagePostController extends Controller
             }
         }
 
-        // dd('ok');
+
+        if ($request->favorite)
+            $image->favoritedBy()->attach(Auth::user()->id);
 
 
         //return to_route('images.show', $image);
@@ -248,7 +248,7 @@ class ImagePostController extends Controller
     public function show(ImagePost $image)
     {
 
-
+        
 
         $user = Auth::user();
         if ($image->private) {
@@ -316,11 +316,24 @@ class ImagePostController extends Controller
             } elseif ($tagSearch->category === 2) {
                 $tag_string_character[] = $tagSearch;
             } elseif ($tagSearch->category === 3) {
+
+                $tagSearch->isFavorite = $user ? $user->favoriteArtists->contains($tagSearch->artist->id) : false;
+
+                $tagSearch->artist_id = $tagSearch->artist->id;
+
                 $tag_string_artist[] = $tagSearch;
             } elseif ($tagSearch->category === 4) {
                 $tag_string_meta[] = $tagSearch;
             } elseif ($tagSearch->category === 5) {
+
+
+                $tagSearch->isFavorite = $user ? $user->favoriteModels->contains($tagSearch->model->id) : false;
+
+                $tagSearch->modelo_id = $tagSearch->model->id;
+                
                 $tag_string_modelo[] = $tagSearch;
+
+
             }
 
         }
@@ -330,21 +343,23 @@ class ImagePostController extends Controller
 
 
 
-        return Inertia::render('images/ImagesShow', compact(
-            'image',
-            'tag_general',
-            'tag_copyright',
-            'tag_character',
-            'tag_artist',
-            'tag_meta',
-            'tag_string_unknow',
-            'tag_string_general',
-            'tag_string_copyright',
-            'tag_string_character',
-            'tag_string_artist',
-            'tag_string_meta',
-            'tag_string_modelo'
-        )
+        return Inertia::render(
+            'images/ImagesShow',
+            compact(
+                'image',
+                'tag_general',
+                'tag_copyright',
+                'tag_character',
+                'tag_artist',
+                'tag_meta',
+                'tag_string_unknow',
+                'tag_string_general',
+                'tag_string_copyright',
+                'tag_string_character',
+                'tag_string_artist',
+                'tag_string_meta',
+                'tag_string_modelo'
+            )
         );
 
     }
@@ -420,10 +435,6 @@ class ImagePostController extends Controller
         }
 
 
-
-
-
-
         $image->save();
 
 
@@ -445,6 +456,7 @@ class ImagePostController extends Controller
      */
     public function destroy(string $id)
     {
+        
 
         $image = ImagePost::findorFail($id);
         if ($image->user_post != null && $image->user_post != Auth::user()->id) {
@@ -464,7 +476,7 @@ class ImagePostController extends Controller
 
     public function search(Request $request)
     {
-        
+
         $user = Auth::user();
 
         $num = $request->num ?? 15;
@@ -535,35 +547,40 @@ class ImagePostController extends Controller
 
         $tags_strings = $request->tags_strings;
 
-        
 
-        if ($tags_strings){
 
-        
-        
-        $tags_strings = preg_replace('/\s+/', ' ', trim($tags_strings));
-        $tags2 = explode(' ', $tags_strings);
-        
+        if ($tags_strings) {
+            $tags_strings = preg_replace('/\s+/', ' ', trim($tags_strings));
+            $tags2 = explode(' ', $tags_strings);
+
             foreach ($tags2 as $tag) {
-                if (strpos($tag,'-')=== 0) {
+                //provisional
+                if ($tag == 'fav'){
+                    $imagenesSearch->whereHas('favoritedBy', function ($query) {
+                        $query->where('user_id', Auth::id());  // Filtrar por el ID del usuario autenticado
+                    });
+                }
+
+
+                else if (strpos($tag, '-') === 0) {
                     $tag = strtolower(substr($tag, 1));
-            
-            // Excluir términos negativos
-            $imagenesSearch->where(function ($query) use ($tag) {
-                $query->whereRaw('LOWER(secondary_tags) NOT LIKE ?', ['% ' . $tag . ' %'])
-                      ->whereRaw('LOWER(secondary_tags) NOT LIKE ?', ['% ' . $tag])
-                      ->whereRaw('LOWER(secondary_tags) NOT LIKE ?', [$tag . ' %']);
-            });
+
+                    // Excluir términos negativos
+                    $imagenesSearch->where(function ($query) use ($tag) {
+                        $query->whereRaw('LOWER(secondary_tags) NOT LIKE ?', ['% ' . $tag . ' %'])
+                            ->whereRaw('LOWER(secondary_tags) NOT LIKE ?', ['% ' . $tag])
+                            ->whereRaw('LOWER(secondary_tags) NOT LIKE ?', [$tag . ' %']);
+                    });
                 } else {
                     $imagenesSearch->whereExists(function ($query) use ($tag) {
                         $query->selectRaw(1)
-    
+
                             ->whereRaw('LOWER(secondary_tags) LIKE ?', ['% ' . $tag . ' %'])
                             ->orWhereRaw('LOWER(secondary_tags) LIKE ?', ['% ' . $tag])
                             ->orWhereRaw('LOWER(secondary_tags) LIKE ?', [$tag . ' %']);
                     });
                 }
-                
+
             }
         }
 
@@ -572,7 +589,7 @@ class ImagePostController extends Controller
 
 
 
-
+        
         $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
 
@@ -589,9 +606,15 @@ class ImagePostController extends Controller
     public function searchByUniqHash(Request $request)
     {
 
-        $threshold = 5; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
+        $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
-        $images = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) <= $threshold")->paginate(10);
+        $images = ImagePost::select('*')
+        ->selectRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) AS similarity")
+        ->whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$request->imagenHash', 16, 10)) <= $threshold")
+        ->orderBy('similarity', 'asc')
+        ->paginate(25);
+
+        
 
         if (Auth::user()) {
             foreach ($images as $image) {
@@ -607,8 +630,10 @@ class ImagePostController extends Controller
 
     public function addFavorite(Request $request)
     {
-
+        
+        if($request->header('referer'));
         $image = ImagePost::findOrFail($request->id);
+        
 
         if ($image->isFavoritedByUser()) {
             //dd($image->favoritedBy->where('user_id',Auth::user()->id));
@@ -617,6 +642,48 @@ class ImagePostController extends Controller
             $image->favoritedBy()->attach(Auth::user()->id);
         }
 
+
+        $referer = request()->header('referer');
+
+        // Expresión regular para capturar una URL con formato 'http://almacen.test/images/{id}'
+        $pattern = "/^http:\/\/almacen\.test\/images\/\d+$/";
+
+        if (preg_match($pattern, $referer)) {
+            dd('recarga la zona');
+    
+        } 
+
+        
+        
+       // return to_route('images.show', $image->id);
+
+    }
+
+
+
+
+    public function newAddFavorite(Request $request){
+
+        $image = ImagePost::findOrFail($request->id);
+
+        
+        if ($image->isFavoritedByUser()) {
+            $image->favoritedBy()->detach(Auth::user()->id);
+            $isFavorited = false;
+            $message = 'Image unfavorited successfully';
+        
+        } else {
+            $image->favoritedBy()->attach(Auth::user()->id);
+            $isFavorited = true;
+            $message = 'Image favorited successfully';
+        }
+
+
+        return response()->json([
+            'favorited' => $isFavorited,
+            'message' => $message,
+            'image_id' => $image->id,
+        ], 200);
     }
 
 
@@ -633,13 +700,220 @@ class ImagePostController extends Controller
     }
 
     //only danbooru
-    public function seeByUrl(){
-       $keyDanbooru = env('DANBOORU_KEY');
-       $loginDanbooru = env('DANBOORU_LOGIN');
+    public function seeByUrl(Request $request)
+    {
+        
+        $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
+        //controlar pixel hash
+        $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
+        $hasher = new ImageHash(new DifferenceHash());
 
-       
-       return Inertia::render('images/FormImageUrl',compact('keyDanbooru','loginDanbooru'));
+
+
+        $images = [];
+        $url_search = $request->url_search;
+        $url_json = '';
+        $url_params = '';
+        $keyDanbooru = env('DANBOORU_KEY');
+        $loginDanbooru = env('DANBOORU_LOGIN');
+
+        if ($request->url_search) {
+            $url_json = explode('?', $url_search)[0];
+            if (count(explode('?', $url_search)) > 1)
+                $url_params = explode('?', $url_search)[1];
+            // $url_json = $url_search = explode('?', $url_search )[0];
+
+
+            $url_json = $url_json . '.json?' . $url_params . "&api_key=$keyDanbooru&login=$loginDanbooru";
+
+            try {
+                $response = Http::get($url_json);
+
+            } catch (\Throwable $th) {
+
+                echo '<img class="" src="/storage/imagesPost/' . ImagePost::where('secondary_tags', 'like', '% 404 %')->inRandomOrder()->first()->imagen . '" alt="kisaki blue archive drawn by oshage osyage921  1cb0d5535665f6de3f9c053ccfac4ffa" width="500" height="600">';
+                dd('¿hago un request form?', 'url no valida 🥵');
+
+            }
+
+
+
+            if ($response->successful()) {
+                $images = $response->json();
+                foreach ($images as &$image) {
+                    
+
+                    $imagePost = ImagePost::where('danbooru_url', 'https://danbooru.donmai.us/posts/' . $image['id'])->first();
+                    $imagePost ? $image['exists'] = true : $image['exists'] = false;
+
+                    if($image['rating'] == 'e' || $image['rating'] == 'q' ){
+                        $image['pegi_18'] = true;
+                        $image['private'] = true;
+                    }else {
+                        if( $image['rating'] == 's' )
+                            $image['pegi_18'] = true;
+                        else
+                            $image['pegi_18'] = false;
+
+                        $image['private'] = false;
+                    }
+
+                    if ($image['exists'])
+                        $image['favorite'] = $imagePost->isFavoritedByUser();
+                    else
+                        $image['favorite'] = false;
+                    
+
+                    $image['extra_tags'] = [];
+
+                    if (!$image['exists']) {
+                        try {
+                            $imagen_hash = Http::get($image['file_url'])->body();
+
+                            $file_url = $image['file_url'];
+
+                            $imageContent = Http::get($file_url)->body();
+                            //$imageName = uniqid() . '.' . $image['file_ext'];
+
+
+                            $imagenHash = $hasher->hash($imagen_hash);
+                       
+                        $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
+                            ->get();
+                        $image['imagen_hash'] = $imagenHash;
+                        $image['similar_count'] = $similarImages->count();
+                    } catch (\Throwable $th) {
+                            
+
+                        $image['imagen_hash'] = '';
+                        $image['similar_count'] = 'no tiene';
+                    }
+
+                    } else {
+                        
+                        $image['imagen_hash'] = $imagePost->imagen_hash;
+                        $image['similar_count'] = 'Subido';
+                    }
+
+
+
+
+                }
+                unset($image);
+
+
+            }
+        }
+        
+
+
+        //return Inertia::render('images/FormImageUrl',compact('keyDanbooru','loginDanbooru'));
+        return Inertia::render('images/FormImageUrl', compact('images', 'url_search'));
     }
+
+
+    public function uploadUrl(Request $request)
+    {
+        
+        $url_danbooru = "https://danbooru.donmai.us/posts/";
+        $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
+        $keyDanbooru = env('DANBOORU_KEY');
+        $loginDanbooru = env('DANBOORU_LOGIN');
+
+
+        foreach ($request->selectedImages as $imagen) {
+
+            
+            
+
+            $response = Http::get($url_danbooru . $imagen['id'] . ".json?&api_key=$keyDanbooru&login=$loginDanbooru");
+
+
+            if ($response->successful()) {
+                $imageData = $response->json();
+
+
+                $file_url = $imageData['file_url'];
+                $imageContent = Http::get($file_url)->body();
+                $extension = pathinfo($file_url, PATHINFO_EXTENSION);
+                $nombreImagen = uniqid() . '.' . $extension;
+
+                Tag::newTagGeneral($imageData['tag_string_general']);
+                Tag::newTagCharacters($imageData['tag_string_character']);
+                Tag::newTagCopyright($imageData['tag_string_copyright']);
+
+            
+                
+                $image = new ImagePost();
+                $image->name = 'Subido por url'; // Deja en blanco de momento
+                if (strlen($imageData['source']) > 255){
+                    $image->original_url = 'URL MUY LARGA';
+                }else{
+                    $image->original_url = $imageData['source'] ?? '';
+                }
+                
+                $image->danbooru_url = $url_danbooru . $imageData['id'];
+                $image->user_post = Auth::user()->id;
+                $image->pegi_18 = $imagen['pegi_18']; 
+                $image->private =  $imagen['private']; 
+                $image->imagen = $nombreImagen;
+                $image->file_ext = $extension;
+                $image->md5_hash = $imageData['md5'];
+                $image->file_size = $imageData['file_size'];
+                $image->description = ''; // Deja en blanco de momento
+                $image->imagen_hash = $imagen['imagen_hash'];
+
+                $image->secondary_tags = $imageData['tag_string'];
+                Tag::orderAndCountTags($image->secondary_tags);
+
+                $image->tag_count = $imageData['tag_count'];
+                $image->tag_count_general = $imageData['tag_count_general'];
+                $image->tag_count_artist = $imageData['tag_count_artist'];
+                $image->tag_count_character = $imageData['tag_count_character'];
+                //dd($image->secondary_tags);
+                $image->save();
+
+                
+                Storage::disk('public')->put('imagesPost/' . $nombreImagen, $imageContent);
+
+
+                //crear version ligera
+
+                if (!in_array($extension, $extensionesVideo)) {
+                    $lightVersionFilename = uniqid() . '_light.' . $extension;
+                    $lightVersionPath = 'app/public/light_versions/' . $lightVersionFilename;
+
+                    Image::make(storage_path('app/public/imagesPost/' . $nombreImagen))
+                        ->resize(null, 360, function ($constraint) {
+                            $constraint->aspectRatio();
+                        })
+                        ->save(storage_path($lightVersionPath));
+
+                    // Asignar la ubicación de la imagen ligera al modelo ImagePost
+                    $image->light_version_imagen = $lightVersionFilename;
+                    $image->save();
+                }
+
+
+                
+                foreach ($imagen['extra_tags'] as $tag) {
+                        $image->tags()->attach($tag);
+                }
+
+                   
+               if($imagen['favorite']){
+                $image->favoritedBy()->attach(Auth::user()->id);
+               } 
+
+            }
+
+        }
+        //$imageIds = collect($request->selectedImages)->pluck('id');
+
+        dd('fin');
+
+    }
+
 
 
 }
