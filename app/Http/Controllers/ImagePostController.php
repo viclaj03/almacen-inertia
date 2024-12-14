@@ -41,8 +41,10 @@ class ImagePostController extends Controller
 
         $user = Auth::user();
 
+        //dd(ImagePost::first());
+
         if ($user) {
-            $images = ImagePost::where(function ($query) use ($user) {
+            $images = ImagePost::select('id','name','imagen','pegi_18','private','light_version_imagen','secondary_tags')->where(function ($query) use ($user) {
                 $query->where(function ($subQuery) use ($user) {
                     $subQuery->where('private', 0)
                         ->orWhere('user_post', $user->id);
@@ -57,7 +59,7 @@ class ImagePostController extends Controller
                 }
             })->orderBy('updated_at', 'desc')->paginate($num);
         } else {
-            $images = ImagePost::where('private', 0)
+            $images = ImagePost::where('private', false)
                 ->where('pegi_18', false)
                 ->whereDoesntHave('tags', function ($q) {
                     $q->where('tag_id', 16);
@@ -66,11 +68,16 @@ class ImagePostController extends Controller
                 ->paginate($num);
         }
 
+       
+
+
         if ($user) {
-            foreach ($images as $image) {
-                $image->isFavorited = $user->favoriteImages->contains($image->id);
-            }
+            $favoriteImages = $user->favoriteImages()->pluck('image_id')->toArray();
+            $images->each(function ($image) use ($favoriteImages) {
+                $image->isFavorited = in_array($image->id, $favoriteImages);
+            });
         }
+
 
         // dd($images);
 
@@ -248,6 +255,7 @@ class ImagePostController extends Controller
     public function show(ImagePost $image)
     {
 
+        
         
 
         $user = Auth::user();
@@ -703,6 +711,9 @@ class ImagePostController extends Controller
     public function seeByUrl(Request $request)
     {
         
+        ini_set('memory_limit', '2G');
+
+        
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
         //controlar pixel hash
         $threshold = 7; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
@@ -758,8 +769,13 @@ class ImagePostController extends Controller
                         $image['private'] = false;
                     }
 
-                    if ($image['exists'])
+                    if ($image['exists']){
+                        
+                    
                         $image['favorite'] = $imagePost->isFavoritedByUser();
+                        $image['pegi_18'] = (boolean) $imagePost->pegi_18;
+                        $image['private'] = (boolean) $imagePost->private;
+                    }
                     else
                         $image['favorite'] = false;
                     
@@ -791,8 +807,8 @@ class ImagePostController extends Controller
 
                     } else {
                         
-                        $image['imagen_hash'] = $imagePost->imagen_hash;
-                        $image['similar_count'] = 'Subido';
+                        $image['imagen_hash'] = $imagePost->imagen_hash??'ERRROR';
+                        $image['similar_count'] = $imagePost->imagen_hash?'Subido':'SUBIDO PERO HAS MAL';
                     }
 
 
@@ -814,6 +830,7 @@ class ImagePostController extends Controller
 
     public function uploadUrl(Request $request)
     {
+        
         
         $url_danbooru = "https://danbooru.donmai.us/posts/";
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];

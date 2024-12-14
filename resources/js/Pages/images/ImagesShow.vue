@@ -232,7 +232,7 @@
           <p class="text-gray-800 dark:text-gray-200">Subido: <span>{{ image.created_at }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">actulizado: <span>{{ image.updated_at }}</span></p>
           <p class="text-gray-800 dark:text-gray-200">Peso: <span>{{formatFileSize(image.file_size) }}</span></p>
-          <p class="text-gray-800 dark:text-gray-200">Hash: <a target="_blank" class="text-white" :href="route('images.uniqHash',{'imagenHash':image.imagen_hash}) ">  <span>{{ image.imagen_hash }}</span>    </a> </p>
+          <p class="text-gray-800 dark:text-gray-200">Hash: <a  v-if="image.imagen_hash" target="_blank" class="text-white" :href="route('images.uniqHash',{'imagenHash':image.imagen_hash}) ">  <span>{{ image.imagen_hash }}</span>    </a> </p>
           <p class="text-gray-800 dark:text-gray-200">md5:<span>{{ image.md5_hash }}</span></p>
           <p v-if="image.original_url" class="text-gray-800 dark:text-gray-200">Original url: <a target="_blank"
               :href="image.original_url"><span class="text-blue-600">{{ image.original_url }}</span></a> </p>

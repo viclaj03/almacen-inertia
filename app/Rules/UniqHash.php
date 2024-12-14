@@ -28,6 +28,8 @@ class UniqHash implements ValidationRule
             return;
         }
 
+        
+
     
         $threshold = 5; //normalmente 5  Umbral de similitud, ajusta según tus necesidades
 
@@ -49,5 +51,6 @@ class UniqHash implements ValidationRule
       
 
         $value->hashing_image = $imagenHash->toHex();
+        
     }
 }

@@ -208,7 +208,6 @@ import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from 'yup';
 import { Link } from '@inertiajs/vue3';
 //import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
@@ -226,25 +225,12 @@ library.add(faLock)
 
 
 
-const { image, tag_list } = defineProps(['image', 'tag_list']);
-
 
 const form = useForm({
-    name: image ? image.name : "",
-    original_url: image ? image.original_url : "",
-    danbooru_url: image ? image.danbooru_url : "",
-    image: image ? image : null,
-    pegi18: image ? !!image.pegi_18 : false,
-    private: image ? !!image.private : false,
-    tags: tag_list ? tag_list : [],
-    hash_ignore: false,
-    description: image ? image.description : "",
-    getTags: false,
-    tags_strings: image ? image.secondary_tags : '',
-    favorite: false
-
+    url: image ,
+    hahs: image ,
+    tags: tag_list ,
 })
-
 
 
 const submitForm = () => {
@@ -276,84 +262,13 @@ const submitForm = () => {
 };
 
 
-const removeURLParameters = (event) => {
-
-    // Obtén la URL actual
-    const currentURL = form.danbooru_url;
-
-    // Divide la URL en base a "?"
-    const parts = currentURL.split("?");
-
-    // Si hay al menos dos partes (la URL base y los parámetros de búsqueda), toma la primera parte
-    if (parts.length > 1) {
-        form.danbooru_url = parts[0];
-    }
-}
 
 
 
 
 
 
-const mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido '),
-    original_url: yup.string().nullable().url('pon una url'),
-    danbooru_url: yup
-        .string().nullable()
-        .url('Pon una URL válida')
-        .test('is-danbooru-url', 'El enlace debe ser de danbooru', /*async*/  function (value) {
-            if (value && value.length > 0 && !form.hash_ignore) {
-                //return /danbooru\.donmai\.us/.test(value);
-                /*try {
-          // Realizar la solicitud a tu API
-          
-          const response = await axios.get(`/api/searchby?url=${value}`, {
-            params: {
-              url: value,
-            },  
-          })
-          
-          // Actuar según la respuesta de la API
-          if (response.data.name ) {
-            
-            return this.createError({ message: `enlace repetido \n localhost/images/${response.data.id}` });
-            
-          } else {
-            return true
-          }
-        } catch (error) {
-          console.error('Error al hacer la solicitud a la API:', error);
-          return this.createError({ message: 'Error al validar el enlace con la API' });
-        }
-               */
 
-            }
-            return true;
-        }),
-    image: yup
-        .mixed()
-        .test('image', 'El archivo debe ser una Imagen', function (value) {
-            // Si no se adjunta una nueva imagen y ya existe una imagen, pasa la validación sin comprobaciones adicionales.
-            if (!value && image) {
-                return true;
-            }
-            // console.log('no hay imagen')
-            console.log(value)
-
-            if (!value) {
-                console.log('no hay imagen')
-                return false;
-            }
-
-            // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if (!['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4', 'video/webm'].includes(value.type)) {
-                console.log(value)
-                return false;
-
-            }
-            return true;
-        }),
-})
 
 
 
