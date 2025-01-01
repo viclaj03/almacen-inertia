@@ -115,7 +115,7 @@ const submitForm = () => {
 };
 
 const  mySchema = yup.object({
-    title: yup.string().required('El nombre es requerido capullo'),
+    title: yup.string().required('El nombre es requerido '),
     original_url: yup.string().url('pon una url'),
     video: yup
     .mixed().required('video obligatoria')

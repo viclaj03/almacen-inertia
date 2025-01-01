@@ -3,7 +3,7 @@
         <template #header>
             <div v-if="!image" class="flex justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    nueva 
+                 <a href="#aqui" class="href">aqui</a>   nueva  <a href="#alli" class="href">aqui</a>  <a href="#" >ffsfe</a> 
                 </h2>
                 <div>
                     <Link :href="route('image.seeByUrl')"
@@ -99,7 +99,7 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
                             <Field name="image" type="file" id="imagen"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
-                                @input="handleImageChange" @change="onFileChange" />
+                                @input="handleImageChange" />
 
                             <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
 
@@ -158,7 +158,7 @@
                     <font-awesome-icon v-if="form.private" icon="lock" style="color: #eae43e; "
                         class="candado-private" />
 
-                    <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
+                    <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery" >
                         <img src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
                             id="imagePreview">
 
@@ -174,9 +174,7 @@
                         <img v-else :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
                             id="imagePreview">
                     </a>
-                    <button @click="removeURLParameters"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">limpiar
-                        url</button>
+                    
                     <div class="mb-4 ">
                         <label for="description_image"
                             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
@@ -205,7 +203,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
+import { VueElement, onBeforeMount, onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from 'yup';
@@ -246,7 +244,6 @@ const form = useForm({
 })
 
 
-
 const submitForm = () => {
     if (!image) {
         form.post('/images',
@@ -276,60 +273,14 @@ const submitForm = () => {
 };
 
 
-const removeURLParameters = (event) => {
-
-    // Obtén la URL actual
-    const currentURL = form.danbooru_url;
-
-    // Divide la URL en base a "?"
-    const parts = currentURL.split("?");
-
-    // Si hay al menos dos partes (la URL base y los parámetros de búsqueda), toma la primera parte
-    if (parts.length > 1) {
-        form.danbooru_url = parts[0];
-    }
-}
-
-
-
-
-
 
 const mySchema = yup.object({
     name: yup.string().required('El nombre es requerido '),
     original_url: yup.string().nullable().url('pon una url'),
     danbooru_url: yup
         .string().nullable()
-        .url('Pon una URL válida')
-        .test('is-danbooru-url', 'El enlace debe ser de danbooru', /*async*/  function (value) {
-            if (value && value.length > 0 && !form.hash_ignore) {
-                //return /danbooru\.donmai\.us/.test(value);
-                /*try {
-          // Realizar la solicitud a tu API
-          
-          const response = await axios.get(`/api/searchby?url=${value}`, {
-            params: {
-              url: value,
-            },  
-          })
-          
-          // Actuar según la respuesta de la API
-          if (response.data.name ) {
-            
-            return this.createError({ message: `enlace repetido \n localhost/images/${response.data.id}` });
-            
-          } else {
-            return true
-          }
-        } catch (error) {
-          console.error('Error al hacer la solicitud a la API:', error);
-          return this.createError({ message: 'Error al validar el enlace con la API' });
-        }
-               */
-
-            }
-            return true;
-        }),
+        .url('Pon una URL válida'),
+        
     image: yup
         .mixed()
         .test('image', 'El archivo debe ser una Imagen', function (value) {
@@ -341,6 +292,7 @@ const mySchema = yup.object({
             console.log(value)
 
             if (!value) {
+               
                 console.log('no hay imagen')
                 return false;
             }
@@ -354,9 +306,6 @@ const mySchema = yup.object({
             return true;
         }),
 })
-
-
-
 
 
 
@@ -379,18 +328,20 @@ const handleImageChange = (event) => {
 
 
 
-
-
-
-
-
+  
 
 onMounted(() => {
-    // 
-    Fancybox.bind('[data-fancybox]', {
+    
+  
+    Fancybox.bind('[data-fancybox="gallery"]',{
+        
     });
-
+    
+  
 });
+
+
+
 
 </script>
 
@@ -448,6 +399,13 @@ const serchImage = () => {
     router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable, num: form.num, tags_strings: form.tags_strings });
 
 };*/
+
+
+
+
+
+
+
 
 </script>
 

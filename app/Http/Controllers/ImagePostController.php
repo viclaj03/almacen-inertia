@@ -110,9 +110,9 @@ class ImagePostController extends Controller
             $videoPath = $imagen->path();
 
             $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+                'ffmpeg.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
                 // Ruta a ffmpeg en tu sistema
-                'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+                'ffprobe.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
                 // Ruta a ffprobe en tu sistema
                 'timeout' => 3600,
                 'ffmpeg.threads' => 12,
@@ -563,10 +563,9 @@ class ImagePostController extends Controller
 
             foreach ($tags2 as $tag) {
                 //provisional
-                if ($tag == 'fav'){
-                    $imagenesSearch->whereHas('favoritedBy', function ($query) {
-                        $query->where('user_id', Auth::id());  // Filtrar por el ID del usuario autenticado
-                    });
+                if (strtolower($tag) == 'fav'){
+                    $imagenesSearch->join('favorites_posts', 'image_posts.id', '=', 'favorites_posts.image_id')
+               ->where('favorites_posts.user_id', Auth::id());
                 }
 
 
@@ -597,14 +596,25 @@ class ImagePostController extends Controller
 
 
 
-        
-        $images = $imagenesSearch->latest()->paginate($num);
+        $tagsArray = explode(' ', $tags_strings);
+        if (in_array('fav', array_map('strtolower', $tagsArray))) 
+            $images = $imagenesSearch->orderBy('favorites_posts.created_at', 'desc')->paginate($num);
+        else
+            $images = $imagenesSearch->latest()->paginate($num);
+
         $images->withQueryString();
 
-        if (Auth::user()) {
+      /*  if (Auth::user()) {
             foreach ($images as $image) {
                 $image->isFavorited = $user->favoriteImages->contains($image->id);
             }
+        }*/ 
+
+        if($user) {
+            $favoriteImages = $user->favoriteImages()->pluck('image_id')->toArray();
+            $images->each(function ($image) use ($favoriteImages) {
+                $image->isFavorited = in_array($image->id, $favoriteImages);
+            });
         }
 
 
