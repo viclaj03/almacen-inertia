@@ -47,7 +47,7 @@ class ContentReviewController extends Controller
 
        
 
-
+/*
         $cantidad = 10;
 
         $images = ImagePost::where('file_size','<=',20971520)->inRandomOrder()->take($cantidad)->get();
@@ -66,7 +66,7 @@ class ContentReviewController extends Controller
         $videosInDatabase = VideoPost::pluck('video_path')->toArray();
 
         $videoNotIndataba = array_diff($videoInFolder,$videosInDatabase);
-
+*/
         // Obtener el listado de archivos en el directorio
         $files = Storage::disk('public')->files('imagesPost');
 
@@ -84,7 +84,7 @@ class ContentReviewController extends Controller
 
     return response()->json([
         'images_not_in_database' => $imagesNotInDatabase,
-        'videos_not_in_database'=>$videoNotIndataba,
+       // 'videos_not_in_database'=>$videoNotIndataba,
         'coun_images_folder' => count($imagesInFolder),
         'count_Database_images' => count($imagesInDatabase),
         'Diferencia'=> count($imagesInFolder) - count($imagesInDatabase),
@@ -122,6 +122,11 @@ class ContentReviewController extends Controller
             $imageResults = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold");
         }
         
+
+
+
+
+        return Inertia::render('images/ReverseSearch', compact('images', 'url_search'));
 
         return response()
                     ->json([
