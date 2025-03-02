@@ -2,7 +2,7 @@
     <AppLayout title="New Imagen">
         <template #header>
             <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Nueva Imagen por URL (Only danbooru) 
+                Nueva Imagen por URL (Only danbooru)  
             </h1>
         </template>
 

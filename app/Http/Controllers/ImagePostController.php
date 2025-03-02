@@ -148,6 +148,15 @@ class ImagePostController extends Controller
 
         $nombreImagen = uniqid() . '.' . $extension;
 
+        // Crear la subcarpeta con el formato año/mes
+        $currentDatePath = date('Y/m'); // Ejemplo: '2024/08'
+
+        
+
+        // Guardar el post en la subcarpeta
+        $postPath = $currentDatePath . '/' . $nombreImagen;
+        
+
         $imagenHashMd5 = hash_file('md5', $imagen->path());
 
         $image->name = $request->name;
@@ -156,7 +165,7 @@ class ImagePostController extends Controller
         $image->user_post = Auth::user()->id;
         $image->pegi_18 = $request->pegi18;
         $image->private = $request->private;
-        $image->imagen = $nombreImagen;
+        $image->imagen = $postPath;
         $image->file_ext = $extension;
         $image->md5_hash = $imagenHashMd5;
         $image->file_size = $imagen->getSize();
@@ -211,7 +220,7 @@ class ImagePostController extends Controller
 
         $image->save();
 
-        Storage::disk('public')->putFileAs('imagesPost', $imagen, $nombreImagen);
+        Storage::disk('public')->putFileAs('imagesPost/'. $currentDatePath, $imagen, $nombreImagen);
 
         //crear version ligera
         $lightVersionFilename = uniqid() . '_light.' . $extension;
