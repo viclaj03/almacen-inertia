@@ -59,7 +59,7 @@ class TestEmail extends Mailable
     public function attachments(): array
     {
         return [];
-        $attachments = [];
+        //$attachments = [];
 
         // Iterar sobre las imágenes y agregarlas a los adjuntos
        /* foreach ($this->images as $image) {

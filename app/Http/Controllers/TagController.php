@@ -46,7 +46,7 @@ class TagController extends Controller
         
  
         $name = $request->search ?? '';
-        $num = $request->num ?? 15;
+        $num = $request->num ?? 30;
         $orderBy = $request->order  ?? 'id';
         $tags = Tag::withCount('imagePosts')
         ->where(function ($query) use ($name) {

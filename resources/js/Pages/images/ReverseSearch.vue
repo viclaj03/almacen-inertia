@@ -3,7 +3,7 @@
         <template #header>
             <div v-if="!image" class="flex justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                 <a href="#aqui" class="href">aqui</a>   nueva  <a href="#alli" class="href">aqui</a>  <a href="#" >ffsfe</a> 
+                    nueva 
                 </h2>
                 <div>
                     <Link :href="route('image.seeByUrl')"
@@ -99,7 +99,7 @@
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Imagen</label>
                             <Field name="image" type="file" id="imagen"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white "
-                                @input="handleImageChange" />
+                                @input="handleImageChange" @change="onFileChange" />
 
                             <ErrorMessage name="image" class="text-green-500 text-xs italic uppercase" />
 
@@ -158,7 +158,7 @@
                     <font-awesome-icon v-if="form.private" icon="lock" style="color: #eae43e; "
                         class="candado-private" />
 
-                    <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery" >
+                    <a v-if="!image" href="https://www.w3schools.com/tags/img_girl.jpg" data-fancybox="gallery">
                         <img src="https://www.w3schools.com/tags/img_girl.jpg" alt="image" width="500" height="600"
                             id="imagePreview">
 
@@ -174,7 +174,9 @@
                         <img v-else :src="'/storage/imagesPost/' + image.imagen" alt="image" width="500" height="600"
                             id="imagePreview">
                     </a>
-                    
+                    <button @click="removeURLParameters"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">limpiar
+                        url</button>
                     <div class="mb-4 ">
                         <label for="description_image"
                             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
@@ -203,10 +205,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import { VueElement, onBeforeMount, onMounted } from 'vue'; // Importa el hook onMounted de Vue
+import { VueElement, onMounted } from 'vue'; // Importa el hook onMounted de Vue
 import { createInertiaApp, useForm } from '@inertiajs/vue3'
 import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from 'yup';
 import { Link } from '@inertiajs/vue3';
 //import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
@@ -224,23 +225,11 @@ library.add(faLock)
 
 
 
-const { image, tag_list } = defineProps(['image', 'tag_list']);
-
 
 const form = useForm({
-    name: image ? image.name : "",
-    original_url: image ? image.original_url : "",
-    danbooru_url: image ? image.danbooru_url : "",
-    image: image ? image : null,
-    pegi18: image ? !!image.pegi_18 : false,
-    private: image ? !!image.private : false,
-    tags: tag_list ? tag_list : [],
-    hash_ignore: false,
-    description: image ? image.description : "",
-    getTags: false,
-    tags_strings: image ? image.secondary_tags : '',
-    favorite: false
-
+    url: image ,
+    hahs: image ,
+    tags: tag_list ,
 })
 
 
@@ -274,38 +263,15 @@ const submitForm = () => {
 
 
 
-const mySchema = yup.object({
-    name: yup.string().required('El nombre es requerido '),
-    original_url: yup.string().nullable().url('pon una url'),
-    danbooru_url: yup
-        .string().nullable()
-        .url('Pon una URL válida'),
-        
-    image: yup
-        .mixed()
-        .test('image', 'El archivo debe ser una Imagen', function (value) {
-            // Si no se adjunta una nueva imagen y ya existe una imagen, pasa la validación sin comprobaciones adicionales.
-            if (!value && image) {
-                return true;
-            }
-            // console.log('no hay imagen')
-            console.log(value)
 
-            if (!value) {
-               
-                console.log('no hay imagen')
-                return false;
-            }
 
-            // Si se adjunta una nueva imagen, realiza las comprobaciones de formato del archivo.
-            if (!['image/jpg', 'image/jpeg', 'image/webp', 'image/gif', 'image/png', 'video/mp4', 'video/webm'].includes(value.type)) {
-                console.log(value)
-                return false;
 
-            }
-            return true;
-        }),
-})
+
+
+
+
+
+
 
 
 
@@ -328,20 +294,18 @@ const handleImageChange = (event) => {
 
 
 
-  
+
+
+
+
+
 
 onMounted(() => {
-    
-  
-    Fancybox.bind('[data-fancybox="gallery"]',{
-        
+    // 
+    Fancybox.bind('[data-fancybox]', {
     });
-    
-  
+
 });
-
-
-
 
 </script>
 
@@ -399,13 +363,6 @@ const serchImage = () => {
     router.get('/search', { tags: selectedTags, tags_name: selectedTagsName, tags_disable: selectedTagsDisable, tags_name_disable: selectedTagsNameDisable, num: form.num, tags_strings: form.tags_strings });
 
 };*/
-
-
-
-
-
-
-
 
 </script>
 

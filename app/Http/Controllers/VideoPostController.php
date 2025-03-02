@@ -60,6 +60,7 @@ class VideoPostController extends Controller
      */
     public function store(Request $request)
     {
+        
         $validated = $request->validate([
             'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime,video/mp4|required',
         ]);
@@ -103,9 +104,9 @@ class VideoPostController extends Controller
         $videoPath = $video->path();
 
         $ffmpeg = FFMpeg::create([
-            'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+            'ffmpeg.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
             // Ruta a ffmpeg en tu sistema
-            'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+            'ffprobe.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
             // Ruta a ffprobe en tu sistema
             'timeout' => 3600,
             'ffmpeg.threads' => 12,
@@ -137,6 +138,9 @@ class VideoPostController extends Controller
 
         $videoPost->save();
         Storage::disk('public')->putFileAs('VideosPost/' . $currentDatePath, $video, $nombrevideo);
+
+
+        dd('fin');
 
         // }
 

@@ -34,6 +34,20 @@ class ContentReviewController extends Controller
 
     public function reviewImagesCount()
     {
+
+       /* $duplicates = ImagePost::where('danbooru_url', 'like', '%?%')->get();
+
+        foreach ($duplicates as $duplicate) {
+            echo "<a data-v-f2b36d1a='' target='_blank' class='flex' href='http://almacen.test/images/{$duplicate->id}'>$duplicate->id $duplicate->name</a><br>";
+        }
+        die();*/
+
+
+      
+
+       
+
+/*
         $cantidad = 10;
 
         $images = ImagePost::where('file_size','<=',20971520)->inRandomOrder()->take($cantidad)->get();
@@ -41,6 +55,8 @@ class ContentReviewController extends Controller
         Mail::to(Auth::user()->email)->send(new TestEmail($images,$cantidad));
 
         //TestJob::dispatch();
+        
+
         
         $files_video = Storage::disk('public')->files('VideosPost');
         $videoInFolder = array_map('basename',$files_video);
@@ -50,7 +66,7 @@ class ContentReviewController extends Controller
         $videosInDatabase = VideoPost::pluck('video_path')->toArray();
 
         $videoNotIndataba = array_diff($videoInFolder,$videosInDatabase);
-
+*/
         // Obtener el listado de archivos en el directorio
         $files = Storage::disk('public')->files('imagesPost');
 
@@ -68,7 +84,7 @@ class ContentReviewController extends Controller
 
     return response()->json([
         'images_not_in_database' => $imagesNotInDatabase,
-        'videos_not_in_database'=>$videoNotIndataba,
+       // 'videos_not_in_database'=>$videoNotIndataba,
         'coun_images_folder' => count($imagesInFolder),
         'count_Database_images' => count($imagesInDatabase),
         'Diferencia'=> count($imagesInFolder) - count($imagesInDatabase),
@@ -88,8 +104,6 @@ class ContentReviewController extends Controller
         $md5HashResults = [];
         $imageResults = [];
 
-
-
         if ($request->url)
             $ulrResuts = ImagePost::where('danbooru_url',$request->url)->orWhere('original_url',$request->url)->get();
 
@@ -102,19 +116,17 @@ class ContentReviewController extends Controller
             $imageResults  = ImagePost::where('md5_hash',$md5_hash)->get();
         }
 
-        if($request->image && $imageResults->isEmpty() && in_array($request->image->getClientOriginalExtension(),$extensionesVideo) ){
+        if($request->image && $imageResults->isEmpty() && !in_array($request->image->getClientOriginalExtension(),$extensionesVideo) ){
             $hasher = new ImageHash(new DifferenceHash());
             $imagenHash =  $hasher->hash($request->image->path());
             $imageResults = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold");
         }
-
-
-
-
-
-
-
         
+
+
+
+
+        return Inertia::render('images/ReverseSearch', compact('images', 'url_search'));
 
         return response()
                     ->json([
@@ -123,9 +135,6 @@ class ContentReviewController extends Controller
                             'imageResults'=>$imageResults,
                             'results'=> count($ulrResuts) || count($imageResults) || count($md5HashResults)
                     ]);
-
-
-
     }
 
 
