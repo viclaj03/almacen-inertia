@@ -35,6 +35,7 @@ class ImagePostController extends Controller
     public function index(Request $request)
     {
 
+        
 
 
         $num = $request->num ?? 10;
@@ -110,9 +111,9 @@ class ImagePostController extends Controller
             $videoPath = $imagen->path();
 
             $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+                'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
                 // Ruta a ffmpeg en tu sistema
-                'ffprobe.binaries' => 'G:\expansiones_programas\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+                'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
                 // Ruta a ffprobe en tu sistema
                 'timeout' => 3600,
                 'ffmpeg.threads' => 12,
@@ -155,6 +156,8 @@ class ImagePostController extends Controller
 
         $nombreImagen = uniqid() . '.' . $extension;
 
+
+
         // Crear la subcarpeta con el formato año/mes
         $currentDatePath = date('Y/m'); // Ejemplo: '2024/08'
 
@@ -162,7 +165,13 @@ class ImagePostController extends Controller
 
         // Guardar el post en la subcarpeta
         $postPath = $currentDatePath . '/' . $nombreImagen;
+
         
+
+        
+
+
+
 
         $imagenHashMd5 = hash_file('md5', $imagen->path());
 
@@ -210,7 +219,6 @@ class ImagePostController extends Controller
                 $image->tag_count_character = $datos['tag_count_character'];
 
 
-
                 if (!$image->original_url) {
                     $image->original_url = $datos['source'];
                 }
@@ -225,6 +233,7 @@ class ImagePostController extends Controller
 
 
 
+        $image->new_position = true;
         $image->save();
 
         Storage::disk('public')->putFileAs('imagesPost/'. $currentDatePath, $imagen, $nombreImagen);
@@ -481,9 +490,9 @@ class ImagePostController extends Controller
         }
 
 
+        //dd($image->imagen);
         Storage::disk('public')->delete('imagesPost/' . $image->imagen);
         Storage::disk('public')->delete('light_versions/' . $image->light_version_imagen);
-
 
         $image->delete();
 
@@ -572,9 +581,10 @@ class ImagePostController extends Controller
 
             foreach ($tags2 as $tag) {
                 //provisional
-                if (strtolower($tag) == 'fav'){
-                    $imagenesSearch->join('favorites_posts', 'image_posts.id', '=', 'favorites_posts.image_id')
-               ->where('favorites_posts.user_id', Auth::id());
+                if ($tag == 'fav'){
+                    $imagenesSearch->whereHas('favoritedBy', function ($query) {
+                        $query->where('user_id', Auth::id());  // Filtrar por el ID del usuario autenticado
+                    });
                 }
 
 
@@ -605,25 +615,14 @@ class ImagePostController extends Controller
 
 
 
-        $tagsArray = explode(' ', $tags_strings);
-        if (in_array('fav', array_map('strtolower', $tagsArray))) 
-            $images = $imagenesSearch->orderBy('favorites_posts.created_at', 'desc')->paginate($num);
-        else
-            $images = $imagenesSearch->latest()->paginate($num);
-
+        
+        $images = $imagenesSearch->latest()->paginate($num);
         $images->withQueryString();
 
-      /*  if (Auth::user()) {
+        if (Auth::user()) {
             foreach ($images as $image) {
                 $image->isFavorited = $user->favoriteImages->contains($image->id);
             }
-        }*/ 
-
-        if($user) {
-            $favoriteImages = $user->favoriteImages()->pluck('image_id')->toArray();
-            $images->each(function ($image) use ($favoriteImages) {
-                $image->isFavorited = in_array($image->id, $favoriteImages);
-            });
         }
 
 
@@ -887,12 +886,25 @@ class ImagePostController extends Controller
                 }else{
                     $image->original_url = $imageData['source'] ?? '';
                 }
+
+
+                // Crear la subcarpeta con el formato año/mes
+                $currentDatePath = date('Y/m'); // Ejemplo: '2024/08'
+
+        
+
+                // Guardar el post en la subcarpeta
+                $postPath = $currentDatePath . '/' . $nombreImagen;
                 
+
+
+
+
                 $image->danbooru_url = $url_danbooru . $imageData['id'];
                 $image->user_post = Auth::user()->id;
                 $image->pegi_18 = $imagen['pegi_18']; 
                 $image->private =  $imagen['private']; 
-                $image->imagen = $nombreImagen;
+                $image->imagen = $postPath;
                 $image->file_ext = $extension;
                 $image->md5_hash = $imageData['md5'];
                 $image->file_size = $imageData['file_size'];
@@ -907,10 +919,11 @@ class ImagePostController extends Controller
                 $image->tag_count_artist = $imageData['tag_count_artist'];
                 $image->tag_count_character = $imageData['tag_count_character'];
                 //dd($image->secondary_tags);
+                $image->new_position = true;
                 $image->save();
 
                 
-                Storage::disk('public')->put('imagesPost/' . $nombreImagen, $imageContent);
+                Storage::disk('public')->put('imagesPost/' . $postPath, $imageContent);
 
 
                 //crear version ligera
@@ -919,7 +932,7 @@ class ImagePostController extends Controller
                     $lightVersionFilename = uniqid() . '_light.' . $extension;
                     $lightVersionPath = 'app/public/light_versions/' . $lightVersionFilename;
 
-                    Image::make(storage_path('app/public/imagesPost/' . $nombreImagen))
+                    Image::make(storage_path('app/public/imagesPost/' . $postPath))
                         ->resize(null, 360, function ($constraint) {
                             $constraint->aspectRatio();
                         })
