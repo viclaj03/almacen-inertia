@@ -624,7 +624,7 @@ class ImagePostController extends Controller
                 $image->isFavorited = $user->favoriteImages->contains($image->id);
             }
         }
-
+ 
 
         return Inertia::render('images/ImagesList', compact('images', 'tags', 'tags_disable', 'num', 'tags_strings'));
     }
@@ -925,7 +925,7 @@ class ImagePostController extends Controller
                 
                 Storage::disk('public')->put('imagesPost/' . $postPath, $imageContent);
 
-
+ 
                 //crear version ligera
 
                 if (!in_array($extension, $extensionesVideo)) {
