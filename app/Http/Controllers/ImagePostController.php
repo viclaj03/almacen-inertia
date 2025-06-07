@@ -13,6 +13,7 @@ use Inertia\Inertia;
 use Mockery\Undefined;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Jenssegers\ImageHash\ImageHash;
@@ -111,9 +112,9 @@ class ImagePostController extends Controller
             $videoPath = $imagen->path();
 
             $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffmpeg.exe',
+                'ffmpeg.binaries' => env('FFMPEG_BINARIES') .'ffmpeg.exe',
                 // Ruta a ffmpeg en tu sistema
-                'ffprobe.binaries' => 'C:\Users\victo\OneDrive\Escritorio\dan\ffmpeg-6.0-essentials_build\bin\ffprobe.exe',
+                'ffprobe.binaries' => ENV('FFMPEG_BINARIES') .'ffprobe.exe',
                 // Ruta a ffprobe en tu sistema
                 'timeout' => 3600,
                 'ffmpeg.threads' => 12,
