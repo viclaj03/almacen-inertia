@@ -850,7 +850,6 @@ class ImagePostController extends Controller
     public function uploadUrl(Request $request)
     {
         
-        
         $url_danbooru = "https://danbooru.donmai.us/posts/";
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
         $keyDanbooru = env('DANBOORU_KEY');

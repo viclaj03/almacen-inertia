@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
 use LDAP\Result;
@@ -102,39 +103,42 @@ class ContentReviewController extends Controller
 
         $ulrResuts = [];
         $md5HashResults = [];
-        $imageResults = [];
+        $imageResults = collect();
 
-        if ($request->url)
-            $ulrResuts = ImagePost::where('danbooru_url',$request->url)->orWhere('original_url',$request->url)->get();
+        $hash = $request->hahs;
+        $url = $request->url;
+        $image = $request->image;
 
+        if ($request->url){
+
+            $imageResults  = ImagePost::where('danbooru_url',$request->url)->orWhere('original_url',$request->url)->get();
+            $ulrResuts  = ImagePost::where('danbooru_url',$request->url)->orWhere('original_url',$request->url)->get();
+        }
         if($request->hahs)
             $md5HashResults = ImagePost::where('md5_hash',$request->hash)->get();
     
         
         if($request->image){
             $md5_hash = hash_file('md5', $request->image->path());
-            $imageResults  = ImagePost::where('md5_hash',$md5_hash)->get();
+           // $imageResults  = ImagePost::where('md5_hash',$md5_hash)->get();
         }
 
         if($request->image && $imageResults->isEmpty() && !in_array($request->image->getClientOriginalExtension(),$extensionesVideo) ){
             $hasher = new ImageHash(new DifferenceHash());
             $imagenHash =  $hasher->hash($request->image->path());
-            $imageResults = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold");
+            $imageResults = ImagePost::select('*')
+        ->selectRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) AS similarity")
+        ->whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
+        ->orderBy('similarity', 'asc')->limit(20)->get();
+            //dd($imageResults,$imagenHash);
         }
-        
 
 
+     //  dd($imageResults,$request->image);
 
+        return Inertia::render('images/ReverseSearch', compact('imageResults', 'ulrResuts','md5HashResults','hash','url'));
 
-        return Inertia::render('images/ReverseSearch', compact('images', 'url_search'));
-
-        return response()
-                    ->json([
-                            'ulrResuts' => $ulrResuts,
-                            'md5HashResults'=>$md5HashResults,
-                            'imageResults'=>$imageResults,
-                            'results'=> count($ulrResuts) || count($imageResults) || count($md5HashResults)
-                    ]);
+      
     }
 
 

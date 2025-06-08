@@ -6,12 +6,19 @@
         Posts
       </h2>
       <br />
+
+      <div class="flex justify-between">
       <Link :href="route('images.create')"
         class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-      Nueva
+      Nueva 
       </Link>
 
+      <Link :href="route('review.imageSearch')"
+        class="mt-10 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+      Buscador 
+      </Link>
 
+      </div>
     </template>
 
     <div class="py-12">

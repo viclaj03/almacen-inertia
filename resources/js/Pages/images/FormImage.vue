@@ -3,7 +3,7 @@
         <template #header>
             <div v-if="!image" class="flex justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                 <a href="#aqui" class="href">aqui</a>   nueva  <a href="#alli" class="href">aqui</a>  <a href="#" >ffsfe</a> 
+                 <a href="#aqui" class="href">aqui</a>   nueva  <a href="#alli" class="href">aqui</a>  <a href="#" ></a> 
                 </h2>
                 <div>
                     <Link :href="route('image.seeByUrl')"

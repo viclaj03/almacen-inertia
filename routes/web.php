@@ -137,8 +137,9 @@ Route::get('/recount-tags',[ContentReviewController::class,'reviewTagsCount'])->
 
 Route::get('/recount-images',[ContentReviewController::class,'reviewImagesCount'])->name('review.imagesCount');
 
-Route::get('/reverse-search',[ContentReviewController::class,'reversePostSearch'])->name('review.imageSearch');
+Route::post('/reverse-search',[ContentReviewController::class,'reversePostSearch'])->name('review.imageSearch');
 
+Route::get('/reverse-search',[ContentReviewController::class,'reversePostSearch'])->name('review.imageSearch');
 
 Route::post('/add-image-favorite/{id}',[ImagePostController::class,'newAddFavorite'])->name('image.newfavorite');
 
