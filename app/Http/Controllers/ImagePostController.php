@@ -807,7 +807,7 @@ class ImagePostController extends Controller
 
                             $file_url = $image['file_url'];
 
-                            $imageContent = Http::get($file_url)->body();
+                            //$imageContent = Http::get($file_url)->body();
                             //$imageName = uniqid() . '.' . $image['file_ext'];
 
 
