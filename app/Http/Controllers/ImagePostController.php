@@ -731,7 +731,7 @@ class ImagePostController extends Controller
     public function seeByUrl(Request $request)
     {
         
-        ini_set('memory_limit', '2G');
+      //  ini_set('memory_limit', '2G');
 
         
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
@@ -837,19 +837,21 @@ class ImagePostController extends Controller
                                 $image['imagen_hash'] = $imagenHash;
                                 $image['similar_count'] = $similarImages->count();
 
+                                 
                                 ImageScan::create([
                                     'source' => 'danbooru',
                                     'source_id' => $image['id'],
                                     'file_url' => $image['file_url'],
-                                    'image_hash' => $imageHash,
+                                    'image_hash' => $imagenHash,
                                 ]);
 
-
+                               
 
                             } catch (\Throwable $th) {
 
                                 $image['imagen_hash'] = '';
                                 $image['similar_count'] = 'no tiene';
+                                
                             }
                         }
 
