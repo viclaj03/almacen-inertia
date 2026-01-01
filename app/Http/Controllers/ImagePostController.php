@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ImagePostRequest;
 use App\Models\ImagePost;
+use App\Models\ImageScan;//nuevo
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -802,27 +803,55 @@ class ImagePostController extends Controller
                     $image['extra_tags'] = [];
 
                     if (!$image['exists']) {
-                        try {
-                            $imagen_hash = Http::get($image['file_url'])->body();
-
-                            $file_url = $image['file_url'];
-
-                            //$imageContent = Http::get($file_url)->body();
-                            //$imageName = uniqid() . '.' . $image['file_ext'];
 
 
-                            $imagenHash = $hasher->hash($imagen_hash);
-                       
-                        $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
+                        $scan = ImageScan::where('source', 'danbooru')
+                        ->where('source_id', $image['id'])
+                        ->first();
+
+
+
+
+                        if ($scan){
+
+                            $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$scan->image_hash;ash', 16, 10)) <= $threshold")
                             ->get();
-                        $image['imagen_hash'] = $imagenHash;
-                        $image['similar_count'] = $similarImages->count();
-                    } catch (\Throwable $th) {
-                            
 
-                        $image['imagen_hash'] = '';
-                        $image['similar_count'] = 'no tiene';
-                    }
+                            $image['imagen_hash'] = $scan->image_hash;
+                            $image['similar_count'] = $similarImages->count();
+                        } else {
+                
+                            try {
+                                $imagen_hash = Http::get($image['file_url'])->body();
+
+                                $file_url = $image['file_url'];
+
+                                //$imageContent = Http::get($file_url)->body();
+                                //$imageName = uniqid() . '.' . $image['file_ext'];
+
+
+                                $imagenHash = $hasher->hash($imagen_hash);
+                       
+                                $similarImages = ImagePost::whereRaw("BIT_COUNT(CONV(imagen_hash, 16, 10) ^ CONV('$imagenHash', 16, 10)) <= $threshold")
+                                ->get();
+                                $image['imagen_hash'] = $imagenHash;
+                                $image['similar_count'] = $similarImages->count();
+
+                                ImageScan::create([
+                                    'source' => 'danbooru',
+                                    'source_id' => $image['id'],
+                                    'file_url' => $image['file_url'],
+                                    'image_hash' => $imageHash,
+                                ]);
+
+
+
+                            } catch (\Throwable $th) {
+
+                                $image['imagen_hash'] = '';
+                                $image['similar_count'] = 'no tiene';
+                            }
+                        }
 
                     } else {
                         
