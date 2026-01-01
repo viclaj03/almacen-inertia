@@ -731,7 +731,7 @@ class ImagePostController extends Controller
     public function seeByUrl(Request $request)
     {
         
-      //  ini_set('memory_limit', '2G');
+        ini_set('memory_limit', '2G');
 
         
         $extensionesVideo = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'];
